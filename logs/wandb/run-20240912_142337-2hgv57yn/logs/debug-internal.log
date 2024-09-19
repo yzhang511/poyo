@@ -1,0 +1,18 @@
+{"time":"2024-09-12T14:23:37.50676144-07:00","level":"INFO","msg":"using version","core version":"0.18.0"}
+{"time":"2024-09-12T14:23:37.506781061-07:00","level":"INFO","msg":"created symlink","path":"logs/wandb/run-20240912_142337-2hgv57yn/logs/debug-core.log"}
+{"time":"2024-09-12T14:23:37.507059529-07:00","level":"INFO","msg":"using version","core version":"0.18.0"}
+{"time":"2024-09-12T14:23:37.507063705-07:00","level":"INFO","msg":"created symlink","path":"logs/wandb/run-20240912_142337-2hgv57yn/logs/debug-core.log"}
+{"time":"2024-09-12T14:23:37.540300054-07:00","level":"INFO","msg":"created new stream","id":"2hgv57yn"}
+{"time":"2024-09-12T14:23:37.540323723-07:00","level":"INFO","msg":"stream: started","id":"2hgv57yn"}
+{"time":"2024-09-12T14:23:37.540343499-07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"2hgv57yn"}}
+{"time":"2024-09-12T14:23:37.540404219-07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"2hgv57yn"}}
+{"time":"2024-09-12T14:23:37.540525295-07:00","level":"INFO","msg":"sender: started","stream_id":{"value":"2hgv57yn"}}
+{"time":"2024-09-12T14:23:37.938853606-07:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-12T14:23:37.952906548-07:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-12T14:23:50.449793884-07:00","level":"INFO","msg":"stream: closing","id":"2hgv57yn"}
+{"time":"2024-09-12T14:23:50.44987233-07:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-12T14:23:50.450036071-07:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-12T14:23:51.182100012-07:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"2hgv57yn"}}
+{"time":"2024-09-12T14:23:51.182124482-07:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"2hgv57yn"}}
+{"time":"2024-09-12T14:23:51.182253502-07:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"2hgv57yn"}}
+{"time":"2024-09-12T14:23:51.195150094-07:00","level":"INFO","msg":"stream: closed","id":"2hgv57yn"}

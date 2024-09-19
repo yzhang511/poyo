@@ -1,0 +1,18 @@
+{"time":"2024-09-12T14:39:00.316926926-07:00","level":"INFO","msg":"using version","core version":"0.18.0"}
+{"time":"2024-09-12T14:39:00.316940048-07:00","level":"INFO","msg":"created symlink","path":"logs/wandb/run-20240912_143900-vpwmxv5w/logs/debug-core.log"}
+{"time":"2024-09-12T14:39:00.317188596-07:00","level":"INFO","msg":"using version","core version":"0.18.0"}
+{"time":"2024-09-12T14:39:00.317193073-07:00","level":"INFO","msg":"created symlink","path":"logs/wandb/run-20240912_143900-vpwmxv5w/logs/debug-core.log"}
+{"time":"2024-09-12T14:39:00.342394075-07:00","level":"INFO","msg":"created new stream","id":"vpwmxv5w"}
+{"time":"2024-09-12T14:39:00.342411886-07:00","level":"INFO","msg":"stream: started","id":"vpwmxv5w"}
+{"time":"2024-09-12T14:39:00.342430252-07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"vpwmxv5w"}}
+{"time":"2024-09-12T14:39:00.342502798-07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"vpwmxv5w"}}
+{"time":"2024-09-12T14:39:00.342625865-07:00","level":"INFO","msg":"sender: started","stream_id":{"value":"vpwmxv5w"}}
+{"time":"2024-09-12T14:39:00.641030281-07:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-12T14:39:00.667406363-07:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-12T15:57:31.715262418-07:00","level":"INFO","msg":"stream: closing","id":"vpwmxv5w"}
+{"time":"2024-09-12T15:57:31.715342636-07:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-12T15:57:31.71587977-07:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-12T15:57:33.531163624-07:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"vpwmxv5w"}}
+{"time":"2024-09-12T15:57:33.531190218-07:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"vpwmxv5w"}}
+{"time":"2024-09-12T15:57:33.531300675-07:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"vpwmxv5w"}}
+{"time":"2024-09-12T15:57:33.573957354-07:00","level":"INFO","msg":"stream: closed","id":"vpwmxv5w"}

@@ -1,0 +1,60 @@
+[2024-09-12 14:34:24,620][kirby.utils.seed_everything][INFO] - Global seed set to 42.
+[2024-09-12 14:34:24,665][__main__][INFO] - Data root: /home/yzhang39/project-kirby/data/processed/
+[2024-09-12 14:34:24,686][__main__][INFO] - Training on 201 samples
+[2024-09-12 14:34:24,686][__main__][INFO] - Training on 184 units
+[2024-09-12 14:34:24,686][__main__][INFO] - Training on 1 sessions
+[2024-09-12 14:34:24,687][__main__][INFO] - Epochs: 1000
+[2024-09-12 14:34:26,030][__main__][INFO] - Local rank/node rank/world size/num nodes: 0/0/1/1
+[2024-09-12 14:34:37,225][root][INFO] - Memory info: 
+MemTotal:       394805420 kB
+MemFree:        349482240 kB
+MemAvailable:   377173428 kB
+Buffers:         1774768 kB
+Cached:         27111772 kB
+SwapCached:            0 kB
+Active:         16808128 kB
+Inactive:       22836576 kB
+Active(anon):        816 kB
+Inactive(anon): 11058808 kB
+Active(file):   16807312 kB
+Inactive(file): 11777768 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:                32 kB
+Writeback:             8 kB
+AnonPages:      10696704 kB
+Mapped:          2579076 kB
+Shmem:            301512 kB
+KReclaimable:    2547704 kB
+Slab:            3770576 kB
+SReclaimable:    2547704 kB
+SUnreclaim:      1222872 kB
+KernelStack:       17072 kB
+PageTables:        59588 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    197402708 kB
+Committed_AS:   16375848 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      429700 kB
+VmallocChunk:          0 kB
+Percpu:           157824 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:   4157440 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+DirectMap4k:    32051564 kB
+DirectMap2M:    363917312 kB
+DirectMap1G:     7340032 kB
+

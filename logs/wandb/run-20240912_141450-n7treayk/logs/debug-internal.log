@@ -1,0 +1,18 @@
+{"time":"2024-09-12T14:14:51.076531776-07:00","level":"INFO","msg":"using version","core version":"0.18.0"}
+{"time":"2024-09-12T14:14:51.076562265-07:00","level":"INFO","msg":"created symlink","path":"logs/wandb/run-20240912_141450-n7treayk/logs/debug-core.log"}
+{"time":"2024-09-12T14:14:51.0769091-07:00","level":"INFO","msg":"using version","core version":"0.18.0"}
+{"time":"2024-09-12T14:14:51.07691312-07:00","level":"INFO","msg":"created symlink","path":"logs/wandb/run-20240912_141450-n7treayk/logs/debug-core.log"}
+{"time":"2024-09-12T14:14:51.10149942-07:00","level":"INFO","msg":"created new stream","id":"n7treayk"}
+{"time":"2024-09-12T14:14:51.101517122-07:00","level":"INFO","msg":"stream: started","id":"n7treayk"}
+{"time":"2024-09-12T14:14:51.10153491-07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"n7treayk"}}
+{"time":"2024-09-12T14:14:51.101586858-07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"n7treayk"}}
+{"time":"2024-09-12T14:14:51.10169645-07:00","level":"INFO","msg":"sender: started","stream_id":{"value":"n7treayk"}}
+{"time":"2024-09-12T14:14:51.581676607-07:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-12T14:14:51.599578032-07:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-12T14:15:04.039035509-07:00","level":"INFO","msg":"stream: closing","id":"n7treayk"}
+{"time":"2024-09-12T14:15:04.039114919-07:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-12T14:15:04.039513552-07:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-12T14:15:04.678386824-07:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"n7treayk"}}
+{"time":"2024-09-12T14:15:04.678402584-07:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"n7treayk"}}
+{"time":"2024-09-12T14:15:04.67852938-07:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"n7treayk"}}
+{"time":"2024-09-12T14:15:04.686653228-07:00","level":"INFO","msg":"stream: closed","id":"n7treayk"}

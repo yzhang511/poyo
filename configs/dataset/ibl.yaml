@@ -1,0 +1,10 @@
+- selection:
+    - dandiset: "ibl"
+      sortsets:
+      - db4df448-e449-4a6f-a0e7-288711e7a75a
+  config:
+    multitask_readout:
+      - decoder_id: RUNNING_SPEED
+        metrics:
+          - metric: r2
+            task: FREE_BEHAVIOR
