@@ -1,0 +1,6 @@
+outputs
+__pycac*he__
+*log*
+wandb
+*.log
+*egg-info*
