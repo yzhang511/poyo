@@ -2,7 +2,7 @@
 defaults:
   - _self_
   - model: poyo_single_session.yaml
-  - dataset: ibl.yaml
+  - dataset: perich_miller_population_2018.yaml
 
 train_transforms:
   - _target_: kirby.transforms.UnitDropout
@@ -10,22 +10,20 @@ train_transforms:
     min_units: 60
     mode_units: 300
     peak: 4
-  - _target_: kirby.transforms.RandomCrop
-    crop_len: 1.0
 
-data_root: /home/yzhang39/project-kirby/data/processed/
+data_root: ./data/processed/
 seed: 42
 batch_size: 128
-eval_epochs: 10
+eval_epochs: 1
 epochs: 1000
 steps: 0  # Note we either specify epochs or steps, not both.
-base_lr: 1.5625e-5
-weight_decay: 0.0001
+base_lr: 3.125e-5
+weight_decay: 1e-4
 # Fraction of epochs to warmup for.
 pct_start: 0.5
 num_workers: 4
 log_dir: ./logs
-name: ibl_single_session
+name: poyo_mp_mini
 backend_config: gpu_fp32
 precision: 32
 nodes: 1

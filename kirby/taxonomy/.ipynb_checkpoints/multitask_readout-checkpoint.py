@@ -50,6 +50,14 @@ class Decoder(StringIntEnum):
     SPEAKING_CONSONANT = 15
     SPEAKING_VOWEL = 16
 
+    #####
+    # visual decision-making
+    CHOICE = 31
+    BLOCK = 32
+    WHEEL = 33
+    WHISKER = 34
+    #####
+
 
 @dataclass
 class DecoderSpec:
@@ -185,10 +193,8 @@ decoder_registry = {
         dim=1,
         target_dim=1,
         type=OutputType.CONTINUOUS,
-        # timestamp_key="running_speed.timestamps",
-        # value_key="running_speed.running_speed",
-        timestamp_key="behavior.timestamps",
-        value_key="behavior.whisker",
+        timestamp_key="running_speed.timestamps",
+        value_key="running_speed.running_speed",
         loss_fn="mse",
     ),
     str(Decoder.GAZE_POS_2D): DecoderSpec(
@@ -207,4 +213,40 @@ decoder_registry = {
         value_key="pupil.size_2d",
         loss_fn="mse",
     ),
+    #####
+    str(Decoder.WHEEL): DecoderSpec(
+        dim=1,
+        target_dim=1,
+        type=OutputType.CONTINUOUS,
+        timestamp_key="wheel.timestamps",
+        value_key="wheel.values",
+        loss_fn="mse",
+    ),
+    str(Decoder.WHISKER): DecoderSpec(
+        dim=1,
+        target_dim=1,
+        type=OutputType.CONTINUOUS,
+        timestamp_key="whisker.timestamps",
+        value_key="whisker.values",
+        loss_fn="mse",
+    ),
+    str(Decoder.CHOICE): DecoderSpec(
+        dim=2,  # [0, 1]
+        target_dim=1,
+        target_dtype="long",
+        type=OutputType.BINARY,
+        timestamp_key="choice.timestamps",
+        value_key="choice.choice",
+        loss_fn="bce",
+    ),
+    str(Decoder.BLOCK): DecoderSpec(
+        dim=3,  # [0, 1, 2]
+        target_dim=1,
+        target_dtype="long",
+        type=OutputType.MULTINOMIAL,
+        timestamp_key="block.timestamps",
+        value_key="block.block",
+        loss_fn="bce",
+    ),
+    #####
 }
