@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --account=col169
+#SBATCH --account=col168
 #SBATCH --partition=gpu-shared
 #SBATCH --job-name="poyo"
 #SBATCH --output="poyo.%j.out"

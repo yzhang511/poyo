@@ -7,9 +7,11 @@ defaults:
 train_transforms:
   - _target_: kirby.transforms.UnitDropout
     max_units: 1000
-    min_units: 60
-    mode_units: 300
-    peak: 4
+    min_units: 20
+    mode_units: 40
+    tail_right: 120
+    peak: 10
+    M: 10
   - _target_: kirby.transforms.RandomCrop
     crop_len: 1.0
 

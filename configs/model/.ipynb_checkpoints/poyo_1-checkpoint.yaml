@@ -1,9 +1,9 @@
 _target_: kirby.models.POYOPlus
-dim: 64
+dim: 128
 dim_head: 64
-num_latents: 12
-depth: 4
-cross_heads: 2
+num_latents: 32
+depth: 24
+cross_heads: 4
 self_heads: 8
 ffn_dropout: 0.2
 lin_dropout: 0.4

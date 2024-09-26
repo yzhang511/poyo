@@ -54,7 +54,7 @@ def run_training(cfg: DictConfig):
     # prepare tokenizer and transforms
 
     # The transform list is defined in the config file.
-    sequence_length = 1.0
+    sequence_length = 2.0
     transforms = hydra.utils.instantiate(
         cfg.train_transforms, sequence_length=sequence_length
     )
@@ -215,7 +215,12 @@ def run_training(cfg: DictConfig):
         ModelCheckpoint(
             dirpath=f"logs/lightning_logs/{wandb.version}",
             save_last=True,
-            save_on_train_epoch_end=True,
+            #####
+            verbose=True,
+            monitor="average_val_metric",
+            mode="max",
+            save_on_train_epoch_end=False,
+            #####
             every_n_epochs=cfg.eval_epochs,
         ),
         train_wrapper.CustomValidator(val_loader),

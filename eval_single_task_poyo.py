@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from tqdm import tqdm
 import argparse
@@ -64,7 +65,7 @@ ap.add_argument("--ckpt_name", type=str, default="2xpi3x0u")
 ap.add_argument("--save_path", type=str, default="./results/")
 ap.add_argument("--data_path", type=str, default="./data/processed/")
 ap.add_argument("--config_path", type=str, default="./configs/")
-ap.add_argument("--config_name", type=str, default="train_ibl.yaml")
+ap.add_argument("--config_name", type=str, default="train_ibl_choice.yaml")
 args = ap.parse_args()
 
 save_path = args.save_path
@@ -490,4 +491,8 @@ if (args.behavior == "whisker") or (args.behavior == "wheel"):
     results[beh_name]['r2_trial'] = _r2_trial
 
 print(results)
-np.save(f"{save_path}/{eid}/{args.behavior}.npy", results)
+
+res_path = f"{save_path}/{eid}/"
+if not os.path.exists(res_path):
+    os.makedirs(res_path)
+np.save(f"{res_path}/{args.behavior}.npy", results)
