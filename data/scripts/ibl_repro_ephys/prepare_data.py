@@ -13,6 +13,8 @@ from data.scripts.ibl_repro_ephys.ibl_data_utils import (
     select_brain_regions, 
     list_brain_regions, 
     bin_spiking_data,
+    bin_behaviors,
+    align_spike_behavior,
     load_target_behavior,
     load_anytime_behaviors,
 )
@@ -64,10 +66,7 @@ bwm_df = pd.read_csv('2023_12_bwm_release.csv', index_col=0)
 # ---------
 # Load Data
 # ---------
-"""
-TO DO: Sync trial filtering criteria.
-"""
-neural_dict, _, meta_data, trials_data = prepare_data(
+neural_dict, _, meta_data, trials_data, _ = prepare_data(
     one, eid, bwm_df, params, n_workers=1
 )
 regions, beryl_reg = list_brain_regions(neural_dict, **params)
@@ -136,18 +135,29 @@ spikes.sort()
 # ---------------
 # Extract Trials
 # ---------------
-"""
-TO DO: Sync trials mask.
-"""
 logging.info(f"Extracting trials ...")
-
+"""
+Sync trials mask.
+"""
 trial_mask = trials_data['trials_mask']
+binned_spikes, clusters_used_in_bins = bin_spiking_data(
+    region_cluster_ids, neural_dict, trials_df=trials_data['trials_df'], n_workers=1, **params
+)
+binned_behaviors, behavior_masks = bin_behaviors(
+    one, eid, trials_df=trials_data['trials_df'], allow_nans=True, n_workers=1, **params
+)
+aligned_binned_spikes, aligned_binned_behaviors, target_mask, del_idxs = align_spike_behavior(
+    binned_spikes, binned_behaviors, trials_data['trials_mask']
+)
+trial_mask = np.array(target_mask).astype(bool).tolist()
+trials_data['trials_df'] = trials_data['trials_df'][trial_mask]
+
 start_time = (
     trials_data['trials_df'][params['align_time']] - params['time_window'][0]
-)[trial_mask]
+)
 end_time = (
     trials_data['trials_df'][params['align_time']] + params['time_window'][1]
-)[trial_mask]
+)
 
 max_num_trials = sum(trial_mask)
 trial_idxs = np.random.choice(np.arange(max_num_trials), max_num_trials, replace=False)
@@ -225,7 +235,7 @@ def map_choice(data):
     choice_map = {"-1": 0, "1": 1}
     return choice_map[str(int(data))]
 
-choice = trials_data['trials_df'].choice[trial_mask]
+choice = trials_data['trials_df'].choice
 
 stim_start_times = start_time.to_numpy()
 stim_end_times = end_time.to_numpy()
@@ -244,7 +254,7 @@ def map_block(data):
     block_map = {"0.2": 0, "0.5": 1, "0.8": 2}
     return block_map[str(data)]
 
-block = trials_data['trials_df'].probabilityLeft[trial_mask]
+block = trials_data['trials_df'].probabilityLeft
 
 block = Interval(
     start=stim_start_times,
@@ -255,8 +265,7 @@ block = Interval(
 )
 
 # Extract reward
-reward = (trials_data["trials_df"]["rewardVolume"] > 1).astype(int).to_numpy()[trial_mask]
-
+reward = (trials_data["trials_df"]["rewardVolume"] > 1).astype(int).to_numpy()
 reward = Interval(
     start=stim_start_times,
     end=stim_end_times,

@@ -22,6 +22,12 @@ conda activate poyo
 
 cd /home/yzhang39/project-kirby/
 
-python train.py --config-name train_ibl.yaml
+# python train.py --config-name train_ibl_choice.yaml
+
+# python train.py --config-name train_ibl_block.yaml
+
+python train.py --config-name train_ibl_wheel.yaml
+
+# python train.py --config-name train_ibl_whisker.yaml
 
 conda deactivate

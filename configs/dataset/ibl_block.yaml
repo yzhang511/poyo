@@ -4,9 +4,6 @@
       - c7bf2d49-4937-4597-b307-9f39cb1c7b16
   config:
     multitask_readout:
-      - decoder_id: CHOICE
-        metrics:
-          - metric: accuracy
       - decoder_id: BLOCK
         metrics:
           - metric: accuracy
