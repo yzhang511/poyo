@@ -1,5 +1,3 @@
-# project-kirby
-
 # Installation
 ## Environment setup with `venv`
 Clone the project, enter the project's root directory, and then run the following:
@@ -22,37 +20,36 @@ Currently this project requires the following:
 
 You can find the documentation for this project [here](https://chic-dragon-bc9a04.netlify.app/).
 
-## Contributing
-Make sure you have `black` and `pre-commit` installed. You can run the following once:
-```bash
-pre-commit install
-``` 
+## To Run POYO on IBL Data:
 
-## Downloading and preparing the data
-Run the following to download and prepare the data:
-```bash
-snakemake --cores 8 odoherty_sabes
+1. Prepare datasets:
 ```
-
-To prepare all of the datasets from the NeurIPS paper:
-```bash
-snakemake --cores 8 poyo_neurips
+cd data/scripts/ibl_repro_ephys
+python prepare_data.py --eid XXX
 ```
-
-# Training
-To train POYO you can run:
-```bash
-python train.py --config-name train.yaml
+2. Change session ID in data config: `configs/dataset/ibl_choice.yaml` for each behavior
+3. Calculate normalization mean and std for continuous behavior:
 ```
-Everything is logged to wandb.
-
-# Finetuning
-## Unit-Identification
-```bash
-python python train.py --config-name unit_identification.yaml
+cd scripts/
+python calculate_normalization_scales.py --data_root ~/poyo_ibl/data/processed/ --dataset_config ~/poyo_ibl/configs/dataset/ibl_wheel.yaml
 ```
-
-## Full finetuning
-```bash
-python python train.py --config-name finetune.yaml
+Paste the mean and std to data config files. 
+4. Change the params for unit drop out in `configs/train_ibl_choice.yaml` for each behavior: 
+```
+- _target_: kirby.transforms.UnitDropout
+    max_units: 1000
+    min_units: 40
+    mode_units: 80
+    tail_right: 120
+    peak: 10
+    M: 10
+```
+You mainly need to change `min_units` and `mode_units`.  
+5. Train (modify this file):
+```
+sbatch train.sh
+```
+6. Eval:
+```
+python eval_single_task_poyo.py --eid XXX --behavior choice --config_name train_ibl_choice.yaml --ckpt_name XXXXX
 ```

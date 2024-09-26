@@ -34,11 +34,22 @@ cd scripts/
 python calculate_normalization_scales.py --data_root ~/poyo_ibl/data/processed/ --dataset_config ~/poyo_ibl/configs/dataset/ibl_wheel.yaml
 ```
 Paste the mean and std to data config files. 
-4. Train (modify this file):
+4. Change the params for unit drop out in `configs/train_ibl_choice.yaml` for each behavior: 
+```
+- _target_: kirby.transforms.UnitDropout
+    max_units: 1000
+    min_units: 40
+    mode_units: 80
+    tail_right: 120
+    peak: 10
+    M: 10
+```
+You mainly need to change `min_units` and `mode_units`.  
+5. Train (modify this file):
 ```
 sbatch train.sh
 ```
-5. Eval:
+6. Eval:
 ```
 python eval_single_task_poyo.py --eid XXX --behavior choice --config_name train_ibl_choice.yaml --ckpt_name XXXXX
 ```
