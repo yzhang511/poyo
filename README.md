@@ -27,13 +27,16 @@ You can find the documentation for this project [here](https://chic-dragon-bc9a0
 cd data/scripts/ibl_repro_ephys
 python prepare_data.py --eid XXX
 ```
+
 2. Change session ID in data config: `configs/dataset/ibl_choice.yaml` for each behavior
+
 3. Calculate normalization mean and std for continuous behavior:
 ```
 cd scripts/
 python calculate_normalization_scales.py --data_root ~/poyo_ibl/data/processed/ --dataset_config ~/poyo_ibl/configs/dataset/ibl_wheel.yaml
 ```
 Paste the mean and std to data config files. 
+
 4. Change the params for unit drop out in `configs/train_ibl_choice.yaml` for each behavior: 
 ```
 - _target_: kirby.transforms.UnitDropout
@@ -44,11 +47,13 @@ Paste the mean and std to data config files.
     peak: 10
     M: 10
 ```
-You mainly need to change `min_units` and `mode_units`.  
+You mainly need to change `min_units` and `mode_units`. 
+
 5. Train (modify this file):
 ```
 sbatch train.sh
 ```
+
 6. Eval:
 ```
 python eval_single_task_poyo.py --eid XXX --behavior choice --config_name train_ibl_choice.yaml --ckpt_name XXXXX
