@@ -66,7 +66,7 @@ with open(train_choice_path, 'r') as file:
 
 data = yaml.safe_load(yaml_content)
 data['data_root'] = data_root
-data['defaults'][2]['dataset'] = f'ibl_choice_{eid}'
+data['defaults'][2]['dataset'] = f'ibl_choice_{eid}.yaml'
 with open(os.path.join(base_path, f'train_ibl_choice_{eid}.yaml'), 'w') as file:
     yaml.dump(data, file)
 
@@ -77,7 +77,7 @@ with open(train_block_path, 'r') as file:
 
 data = yaml.safe_load(yaml_content)
 data['data_root'] = data_root
-data['defaults'][2]['dataset'] = f'ibl_block_{eid}'
+data['defaults'][2]['dataset'] = f'ibl_block_{eid}.yaml'
 with open(os.path.join(base_path, f'train_ibl_block_{eid}.yaml'), 'w') as file:
     yaml.dump(data, file)
 
@@ -88,7 +88,7 @@ with open(train_wheel_path, 'r') as file:
 
 data = yaml.safe_load(yaml_content)
 data['data_root'] = data_root
-data['defaults'][2]['dataset'] = f'ibl_wheel_{eid}'
+data['defaults'][2]['dataset'] = f'ibl_wheel_{eid}.yaml'
 with open(os.path.join(base_path, f'train_ibl_wheel_{eid}.yaml'), 'w') as file:
     yaml.dump(data, file)
 
@@ -99,7 +99,7 @@ with open(train_whisker_path, 'r') as file:
 
 data = yaml.safe_load(yaml_content)
 data['data_root'] = data_root
-data['defaults'][2]['dataset'] = f'ibl_whisker_{eid}'
+data['defaults'][2]['dataset'] = f'ibl_whisker_{eid}.yaml'
 
 with open(os.path.join(base_path, f'train_ibl_whisker_{eid}.yaml'), 'w') as file:
     yaml.dump(data, file)

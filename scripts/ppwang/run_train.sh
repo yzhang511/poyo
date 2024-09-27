@@ -34,8 +34,8 @@ do
 
     cd ppwang
 
-    sbatch train.sh "/home/ywang74/Dev/poyo_ibl/configs/train_ibl_wheel_${line}.yaml"
-    sbatch train.sh "/home/ywang74/Dev/poyo_ibl/configs/train_ibl_whisker_${line}.yaml"
-    sbatch train.sh "/home/ywang74/Dev/poyo_ibl/configs/train_ibl_choice_${line}.yaml"
-    sbatch train.sh "/home/ywang74/Dev/poyo_ibl/configs/train_ibl_block_${line}.yaml"
+    sbatch train.sh train_ibl_wheel_${line}.yaml
+    sbatch train.sh train_ibl_whisker_${line}.yaml
+    sbatch train.sh train_ibl_choice_${line}.yaml
+    sbatch train.sh train_ibl_block_${line}.yaml
 done < /home/ywang74/Dev/poyo_ibl/data/test_eids.txt
