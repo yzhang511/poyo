@@ -153,7 +153,7 @@ trial_mask = np.array(target_mask).astype(bool).tolist()
 trials_data['trials_df'] = trials_data['trials_df'][trial_mask]
 
 start_time = (
-    trials_data['trials_df'][params['align_time']] - params['time_window'][0]
+    trials_data['trials_df'][params['align_time']] + params['time_window'][0]
 )
 end_time = (
     trials_data['trials_df'][params['align_time']] + params['time_window'][1]

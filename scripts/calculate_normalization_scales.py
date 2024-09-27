@@ -146,8 +146,8 @@ if __name__ == "__main__":
     decoder_id = data[0]['config']['multitask_readout'][0]['decoder_id']
 
     val_dict = main(args)
-    data[0]['config']['multitask_readout'][0]['normalize_mean'][0] = val_dict[decoder_id]['mean']
-    data[0]['config']['multitask_readout'][0]['normalize_std'][0] = val_dict[decoder_id]['std']
+    data[0]['config']['multitask_readout'][0]['normalize_mean'][0] = float(val_dict[decoder_id]['mean'])
+    data[0]['config']['multitask_readout'][0]['normalize_std'][0] = float(val_dict[decoder_id]['std'])
     
     with open(dataset_config_path, 'w') as f:
         yaml.dump(data, f)
