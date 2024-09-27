@@ -4,3 +4,7 @@ __pycac*he__
 wandb
 *.log
 *egg-info*
+*yaml
+*.h5
+*.mpk
+*.out

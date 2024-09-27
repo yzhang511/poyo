@@ -106,6 +106,7 @@ def main(args):
     table.add_column("decoder_id")
     table.add_column("mean")
     table.add_column("std")
+    val_dict = {}
     for decoder_id, (mean, std) in zscales.items():
         if isinstance(mean, np.ndarray):
             if mean.shape != (2,):
@@ -114,11 +115,13 @@ def main(args):
             table.add_row(f"{decoder_id}.y", f"{mean[1]:.8f}", f"{std[1]:.8f}")
         else:
             table.add_row(decoder_id, f"{mean:.8f}", f"{std:.8f}")
+        val_dict[decoder_id] = {"mean": mean, "std": std}
     console.print(table)
     print("[green] Done calculating mean, std for all continous outputs")
     print(
         "[yellow] Manually copy the zscales for each decoder_id into the dataset config file"
     )
+    return val_dict
 
 
 if __name__ == "__main__":
@@ -135,4 +138,17 @@ if __name__ == "__main__":
         help="Path to the dataset config file",
     )
     args = parser.parse_args()
-    main(args)
+    import yaml
+    dataset_config_path = args.dataset_config
+    with open(dataset_config_path) as f:
+        yaml_content = f.read()
+    data = yaml.safe_load(yaml_content)
+    decoder_id = data[0]['config']['multitask_readout'][0]['decoder_id']
+
+    val_dict = main(args)
+    data[0]['config']['multitask_readout'][0]['normalize_mean'][0] = val_dict[decoder_id]['mean']
+    data[0]['config']['multitask_readout'][0]['normalize_std'][0] = val_dict[decoder_id]['std']
+    
+    with open(dataset_config_path, 'w') as f:
+        yaml.dump(data, f)
+    print(f"Updated the dataset config file with the zscales for {decoder_id}")

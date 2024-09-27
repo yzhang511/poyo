@@ -280,9 +280,12 @@ reward = Interval(
 # Save Data Object
 # -----------------
 logging.info(f"Saving data ...")
+import os
+os.makedirs(f'{base_path}/processed/ibl_{eid}', exist_ok=True)
+os.makedirs(f'{base_path}/raw', exist_ok=True)
 db = DatasetBuilder(
     raw_folder_path=f'{base_path}/raw/',
-    processed_folder_path=f'{base_path}/processed/ibl',
+    processed_folder_path=f'{base_path}/processed/ibl_{eid}/',
     # metadata for the dataset
     experiment_name=eid,
     origin_version='',
