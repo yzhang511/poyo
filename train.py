@@ -200,7 +200,8 @@ def run_training(cfg: DictConfig):
     tb = lightning.pytorch.loggers.tensorboard.TensorBoardLogger(
         save_dir=cfg.log_dir,
     )
-
+    behav = cfg.dataset[0]['config']['multitask_readout'][0]['decoder_id'].lower()
+    eid = cfg.dataset[0]['selection'][0]['sortsets'][0]
     wandb = lightning.pytorch.loggers.WandbLogger(
         save_dir=cfg.log_dir,
         entity=cfg.get("wandb_entity", None),
@@ -209,11 +210,11 @@ def run_training(cfg: DictConfig):
         log_model=cfg.get("wandb_log_model", False),
     )
     print(f"Wandb ID: {wandb.version}")
-
+    
     callbacks = [
         ModelSummary(max_depth=2),  # Displays the number of parameters in the model.
         ModelCheckpoint(
-            dirpath=f"logs/lightning_logs/{wandb.version}",
+            dirpath=f"logs/lightning_logs/{eid}_{behav}",
             save_last=True,
             #####
             verbose=True,

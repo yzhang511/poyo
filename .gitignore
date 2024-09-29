@@ -8,3 +8,4 @@ wandb
 *.h5
 *.mpk
 *.out
+*.npy

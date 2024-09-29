@@ -96,7 +96,7 @@ dataset = Dataset(
     split="test", # "train"/"valid"/"test"
     include=[{
         "selection": [{
-            "dandiset": "ibl",
+            "dandiset": f"ibl_{eid}",
             "sortsets": {eid},
         }],
     }],
@@ -366,7 +366,7 @@ for batch in tqdm(val_loader):
 results = {'Choice': {}, 'Block': {}, 'Whisker':{}, 'Wheel': {}}
 
 # Eval discrete behaviors
-session_id = f'ibl/{eid}'
+session_id = f'ibl_{eid}/{eid}'
 test_data = dataset.get_session_data(session_ids[0])
 intervals = np.c_[
     dataset.get_session_data(session_id).trials.start, 
