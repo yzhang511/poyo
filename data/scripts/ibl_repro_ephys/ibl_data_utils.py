@@ -180,8 +180,7 @@ def load_trials_and_mask(
         ]
 
     if sess_loader is None:
-        sess_loader = SessionLoader(one, eid)
-
+        sess_loader = SessionLoader(one, eid=eid)
     if sess_loader.trials.empty:
         sess_loader.load_trials()
 
@@ -410,7 +409,7 @@ def load_target_behavior(one, eid, target):
     """
 
     # To load wheel and motion energy, we just use the SessionLoader, e.g.
-    sess_loader = SessionLoader(one, eid)
+    sess_loader = SessionLoader(one, eid=eid)
     
     # wheel is a dataframe that contains wheel times and position interpolated to a uniform sampling rate, velocity and
     # acceleration computed using Gaussian smoothing
@@ -784,7 +783,7 @@ def prepare_data(one, eid, bwm_df, params, n_workers=os.cpu_count()):
     #tmp_df = bwm_df.set_index(['eid', 'subject']).xs(eid, level='eid')
     #subject = tmp_df.index[0]
     #lab = tmp_df.lab.iloc[0]
-
+    print(one, eid)
     pids, probe_names = one.eid2pid(eid)  # Select all probes of this session
     #pids = tmp_df['pid'].to_list() 
     #probe_names = tmp_df['probe_name'].to_list()
