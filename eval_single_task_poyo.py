@@ -490,6 +490,17 @@ if (args.behavior == "whisker") or (args.behavior == "wheel"):
     results[beh_name]['r2_psth'] = _r2_psth
     results[beh_name]['r2_trial'] = _r2_trial
 
+    # res_path = f"{save_path}/{eid}/"
+    # os.makedirs(res_path, exist_ok=True)
+    save_res = {
+        'gt': y,
+        'pred': y_pred,
+        'beh_name': beh_name,
+        'eid': eid
+    }
+    os.makedirs(f"{save_path}/raw/", exist_ok=True)
+    np.save(f"{save_path}/raw/{eid}_{beh_name}.npy", save_res)
+
 print(results)
 
 res_path = f"{save_path}/{eid}/"
