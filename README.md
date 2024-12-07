@@ -1,11 +1,12 @@
 # Installation
 ## Environment setup with `venv`
 Clone the project, enter the project's root directory, and then run the following:
+
 ```bash
-python3.9 -m venv venv           # create an empty virtual environment
-source venv/bin/activate         # activate it
-pip install --upgrade pip        # update to the latest version of pip
-pip install -e .                 # install project-kirby into your path
+conda create -n poyo python=3.9      # create an empty virtual environment
+conda activate poyo                  # activate it
+pip install -e .                     # install project-kirby into your path
+pip install -r ibl_requirements.txt  # install packages needed to load IBL data
 ```
 
 Currently this project requires the following:

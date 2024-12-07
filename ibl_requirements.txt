@@ -1,5 +1,7 @@
-ONE-api
-iblutil
-iblatlas
+ONE-api==2.7.0
+iblutil==1.10.0
+iblatlas==0.5.3
 ibllib==2.34.0
+ibl-neuropixel==1.0.1
+
 
