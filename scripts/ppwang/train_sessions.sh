@@ -32,7 +32,7 @@ done < ../data/train_eids.txt
 
 # unify the normalized config files
 python unify_config.py --base_path ../ \
-                        --eid_list_path ../data/test_eids.txt 
+                        --eid_list_path ../data/train_eids.txt 
 cd .. 
 # echo "Finished calculating normalization scales"
 python train.py --config-name train_ibl_sessions.yaml
