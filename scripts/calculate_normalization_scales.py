@@ -146,8 +146,14 @@ if __name__ == "__main__":
     decoder_id = data[0]['config']['multitask_readout'][0]['decoder_id']
 
     val_dict = main(args)
-    data[0]['config']['multitask_readout'][0]['normalize_mean'][0] = float(val_dict[decoder_id]['mean'])
-    data[0]['config']['multitask_readout'][0]['normalize_std'][0] = float(val_dict[decoder_id]['std'])
+    for task_id in range(len(data[0]['config']['multitask_readout'])):
+        decoder_id = data[0]['config']['multitask_readout'][task_id]['decoder_id']
+        if decoder_id in ['BLOCK', 'CHOICE']:
+            continue
+        assert decoder_id in ['WHISKER', 'WHEEL'] # only these two are allowed
+        data[0]['config']['multitask_readout'][task_id]['normalize_mean'][0] = float(val_dict[decoder_id]['mean'])
+        data[0]['config']['multitask_readout'][task_id]['normalize_std'][0] = float(val_dict[decoder_id]['std'])
+
     
     with open(dataset_config_path, 'w') as f:
         yaml.dump(data, f)

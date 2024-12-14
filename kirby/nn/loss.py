@@ -33,7 +33,7 @@ def compute_loss_or_metric(
             loss_noreduce = F.mse_loss(output, target, reduction="none").mean(dim=1)
             return (weights * loss_noreduce).sum() / weights.sum()
         elif loss_or_metric == "r2":
-            r2score = R2Score(num_outputs=target.shape[1])
+            r2score = R2Score()
             return r2score(output, target)
         elif loss_or_metric == "frame_diff_acc":
             normalized_window = 30 / 450

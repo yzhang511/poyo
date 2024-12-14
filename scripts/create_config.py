@@ -5,13 +5,26 @@ import argparse
 parser = argparse.ArgumentParser(description='Create a config file')
 parser.add_argument('--base_path', type=str, help='Base path for the dataset')
 parser.add_argument('--eid', type=str, help='Experiment ID')
+parser.add_argument('--multitask', default=False, action='store_true', help='Whether to create multitask configs')
 
 args = parser.parse_args()
 base_path = args.base_path
+multitask = args.multitask
 base_path = os.path.join(base_path, 'configs')
 eid = args.eid
 # dataset configs
 # dataset choice config
+if multitask:
+    print('Creating multitask configs')
+    data_multitask_path = os.path.join(base_path, 'dataset', 'ibl_multitask.yaml')
+    with open(data_multitask_path, 'r') as file:
+        yaml_content = file.read()
+    data = yaml.safe_load(yaml_content)
+    data[0]['selection'][0]['dandiset'] = f'ibl_{eid}'
+    data[0]['selection'][0]['sortsets'][0] = f'{eid}'
+    with open(os.path.join(base_path, 'dataset', f'ibl_multitask_{eid}.yaml'), 'w') as file:
+        yaml.dump(data, file)
+    exit()
 data_choice_path = os.path.join(base_path, 'dataset', 'ibl_choice.yaml')
 with open(data_choice_path, 'r') as file:
     yaml_content = file.read()
