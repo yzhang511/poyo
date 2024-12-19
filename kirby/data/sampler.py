@@ -52,7 +52,7 @@ class RandomFixedWindowSampler(torch.utils.data.Sampler):
             for start, end in sampling_intervals:
                 interval_length = end - start
                 if interval_length < self.window_length:
-                    if self.drop_short:
+                    if self.drop_short or True:
                         total_short_dropped += interval_length
                         continue
                     else:
@@ -180,7 +180,7 @@ class SequentialFixedWindowSampler(torch.utils.data.Sampler):
             for start, end in sampling_intervals:
                 interval_length = end - start
                 if interval_length < self.window_length:
-                    if self.drop_short:
+                    if self.drop_short or True:
                         total_short_dropped += interval_length
                         continue
                     else:
