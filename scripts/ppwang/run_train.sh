@@ -12,10 +12,19 @@
 #SBATCH --gpus=1
 #SBATCH -t 2-00
 #SBATCH --export=ALL
-eid=${1}
+pretrain_num_ses=$1
 
 module load gpu
 module load slurm
+
+# if pretrain_num_ses is not empty, then we will pretrain the model
+if [ -z "$pretrain_num_ses" ]
+then
+    echo "No pretrain"
+    pretrain_num_ses=0
+else
+    echo "Pretrain Num Ses: $pretrain_num_ses"
+fi
 
 . ~/.bashrc
 
@@ -24,7 +33,8 @@ while IFS= read -r line
 do
     cd ..
     python create_config.py --eid ${line} \
-                            --base_path ../
+                            --base_path ../ \
+                            --pretrain_num_ses ${pretrain_num_ses}
 
     python calculate_normalization_scales.py --data_root /home/ywang74/Dev/poyo_ibl/data/processed \
                                             --dataset_config  /home/ywang74/Dev/poyo_ibl/configs/dataset/ibl_wheel_${line}.yaml 
