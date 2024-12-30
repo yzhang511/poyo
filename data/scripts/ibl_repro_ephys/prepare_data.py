@@ -14,7 +14,7 @@ from data.scripts.ibl_repro_ephys.ibl_data_utils import (
     list_brain_regions, 
     bin_spiking_data,
     bin_behaviors,
-    align_spike_behavior,
+    align_data,
     load_target_behavior,
     load_anytime_behaviors,
 )
@@ -146,8 +146,12 @@ binned_spikes, clusters_used_in_bins = bin_spiking_data(
 binned_behaviors, behavior_masks = bin_behaviors(
     one, eid, trials_df=trials_data['trials_df'], allow_nans=True, n_workers=1, **params
 )
-aligned_binned_spikes, aligned_binned_behaviors, target_mask, del_idxs = align_spike_behavior(
-    binned_spikes, binned_behaviors, trials_data['trials_mask']
+align_bin_spikes, align_bin_beh, _, target_mask, _ = align_data(
+    binned_spikes, 
+    binned_behaviors, 
+    None, 
+    list(binned_behaviors.keys()), 
+    trials_data["trials_mask"], 
 )
 trial_mask = np.array(target_mask).astype(bool).tolist()
 trials_data['trials_df'] = trials_data['trials_df'][trial_mask]
