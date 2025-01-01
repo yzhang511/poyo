@@ -56,6 +56,16 @@ params = {
     'fr_thresh': 0.5
 }
 
+beh_names = [
+    "choice", 
+    "reward", 
+    "block",
+    "wheel-speed", 
+    "whisker-motion-energy", 
+]
+
+DYNAMIC_VARS = list(filter(lambda x: x not in ["choice", "reward", "block"], beh_names))
+
 one = ONE(
     base_url='https://openalyx.internationalbrainlab.org', 
     password='international', 
@@ -144,7 +154,13 @@ binned_spikes, clusters_used_in_bins = bin_spiking_data(
     region_cluster_ids, neural_dict, trials_df=trials_data['trials_df'], n_workers=1, **params
 )
 binned_behaviors, behavior_masks = bin_behaviors(
-    one, eid, trials_df=trials_data['trials_df'], allow_nans=True, n_workers=1, **params
+    one, 
+    eid, 
+    DYNAMIC_VARS,
+    trials_df=trials_data['trials_df'], 
+    allow_nans=True, 
+    n_workers=1, 
+    **params
 )
 align_bin_spikes, align_bin_beh, _, target_mask, _ = align_data(
     binned_spikes, 
