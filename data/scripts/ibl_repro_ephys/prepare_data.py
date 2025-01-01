@@ -67,7 +67,7 @@ bwm_df = pd.read_csv('2023_12_bwm_release.csv', index_col=0)
 # Load Data
 # ---------
 neural_dict, _, meta_data, trials_data, _ = prepare_data(
-    one, eid, bwm_df, params, n_workers=1
+    one, eid, params, n_workers=1
 )
 regions, beryl_reg = list_brain_regions(neural_dict, **params)
 region_cluster_ids = select_brain_regions(
