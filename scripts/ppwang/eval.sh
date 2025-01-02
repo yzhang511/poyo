@@ -2,8 +2,8 @@
 
 #SBATCH --account=bcxj-delta-gpu
 #SBATCH --partition=gpuA40x4
-#SBATCH --job-name="create-dataset"
-#SBATCH --output="create-dataset.%j.out"
+#SBATCH --job-name="eval"
+#SBATCH --output="eval.%j.out"
 #SBATCH -N 1
 #SBACTH --array=0
 #SBATCH -c 1
@@ -13,8 +13,8 @@
 #SBATCH -t 0-05
 #SBATCH --export=ALL
 
-module load gpu
-module load slurm
+# module load gpu
+# module load slurm
 
 . ~/.bashrc
 cd ../..

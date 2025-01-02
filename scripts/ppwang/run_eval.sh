@@ -12,10 +12,10 @@
 #SBATCH --gpus=1
 #SBATCH -t 1:00:00
 #SBATCH --export=ALL
-eid=${1}
+# eid=${1}
 
-module load gpu
-module load slurm
+# module load gpu
+# module load slurm
 
 . ~/.bashrc
 

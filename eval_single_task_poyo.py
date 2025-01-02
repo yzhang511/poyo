@@ -498,8 +498,8 @@ if (args.behavior == "whisker") or (args.behavior == "wheel"):
         'beh_name': beh_name,
         'eid': eid
     }
-    os.makedirs(f"{save_path}/raw/", exist_ok=True)
-    np.save(f"{save_path}/raw/{eid}_{beh_name}.npy", save_res)
+    # os.makedirs(f"{save_path}/raw/", exist_ok=True)
+    # np.save(f"{save_path}/raw/{eid}_{beh_name}.npy", save_res)
 
 print(results)
 

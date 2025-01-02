@@ -13,12 +13,16 @@ with open('data/test_eids.txt') as file:
 
 result_dir = args.result_dir
 result_files = glob.glob(os.path.join(result_dir, '*/*.npy'))
+print(result_files)
 result_files = [f for f in result_files if any(eid in f for eid in test_eids)]
+# clean files if it contains raw
+result_files = [f for f in result_files if 'raw' not in f]
 choice_res, block_res, wheel_res, whisker_res = {}, {}, {}, {}
 for eid in test_eids:
     for f in result_files:
         if eid in f:
             data = np.load(f, allow_pickle=True).item()
+            print(f)
             if 'choice' in f:   
                 choice_res[eid] = data['Choice']
             elif 'block' in f:
@@ -28,7 +32,7 @@ for eid in test_eids:
             elif 'whisker' in f:
                 whisker_res[eid] = data['Whisker']
             else:
-                raise ValueError('Unknown result type')
+                raise ValueError(f'Unknown result type: {f}')
 print('Choice / Block / Wheel / Whisker')
 print("Accuracy Result")
 choice_list, block_list, wheel_list, whisker_list = [], [], [], []

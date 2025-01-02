@@ -1,7 +1,7 @@
 #!/bin/bash
 
-module load gpu
-module load slurm
+# module load gpu
+# module load slurm
 
 . ~/.bashrc
 cd ../..
