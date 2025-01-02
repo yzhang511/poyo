@@ -1,0 +1,26 @@
+- config:
+    multitask_readout:
+    - decoder_id: WHEEL
+      metrics:
+      - metric: r2
+      normalize_mean:
+      - 0.47629669308662415
+      normalize_std:
+      - 0.8130942519031079
+    - decoder_id: WHISKER
+      metrics:
+      - metric: r2
+      normalize_mean:
+      - 6.003151179517241
+      normalize_std:
+      - 3.4277817355235367
+    - decoder_id: BLOCK
+      metrics:
+      - metric: accuracy
+    - decoder_id: CHOICE
+      metrics:
+      - metric: accuracy
+  selection:
+  - dandiset: ibl_5dcee0eb-b34d-4652-acc3-d10afc6eae68
+    sortsets:
+    - 5dcee0eb-b34d-4652-acc3-d10afc6eae68

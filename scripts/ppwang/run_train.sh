@@ -14,8 +14,8 @@
 #SBATCH --export=ALL
 pretrain_num_ses=$1
 
-module load gpu
-module load slurm
+# module load gpu
+# module load slurm
 
 # if pretrain_num_ses is not empty, then we will pretrain the model
 if [ -z "$pretrain_num_ses" ]
@@ -36,11 +36,11 @@ do
                             --base_path ../ \
                             --pretrain_num_ses ${pretrain_num_ses}
 
-    python calculate_normalization_scales.py --data_root /home/ywang74/Dev/poyo_ibl/data/processed \
-                                            --dataset_config  /home/ywang74/Dev/poyo_ibl/configs/dataset/ibl_wheel_${line}.yaml 
+    python calculate_normalization_scales.py --data_root /u/ywang74/Dev/poyo_ibl/data/processed \
+                                            --dataset_config  /u/ywang74/Dev/poyo_ibl/configs/dataset/ibl_wheel_${line}.yaml 
 
-    python calculate_normalization_scales.py --data_root /home/ywang74/Dev/poyo_ibl/data/processed \
-                                            --dataset_config  /home/ywang74/Dev/poyo_ibl/configs/dataset/ibl_whisker_${line}.yaml 
+    python calculate_normalization_scales.py --data_root /u/ywang74/Dev/poyo_ibl/data/processed \
+                                            --dataset_config  /u/ywang74/Dev/poyo_ibl/configs/dataset/ibl_whisker_${line}.yaml 
 
     cd ppwang
 
@@ -48,4 +48,4 @@ do
     sbatch train.sh train_ibl_whisker_${line}.yaml
     sbatch train.sh train_ibl_choice_${line}.yaml
     sbatch train.sh train_ibl_block_${line}.yaml
-done < /home/ywang74/Dev/poyo_ibl/data/test_eids.txt
+done < /u/ywang74/Dev/poyo_ibl/data/test_eids.txt

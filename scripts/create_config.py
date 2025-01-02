@@ -73,13 +73,13 @@ with open(os.path.join(base_path, 'dataset', f'ibl_whisker_{eid}.yaml'), 'w') as
 
 # train configs
 if args.pretrain_num_ses > 1:
-    ckpt_path = os.path.join('/home/ywang74/Dev/poyo_ibl', 'outputs', f'pretrain_{args.pretrain_num_ses}', 'pretrain.ckpt')
+    ckpt_path = os.path.join('/u/ywang74/Dev/poyo_ibl', 'outputs', f'pretrain_{args.pretrain_num_ses}', 'pretrain.ckpt')
     finetune=True
 else:
     ckpt_path = None
     finetune=False
 # train choice config
-data_root = os.path.join('/home/ywang74/Dev/poyo_ibl', 'data', 'processed')
+data_root = os.path.join('/u/ywang74/Dev/poyo_ibl', 'data', 'processed')
 train_choice_path = os.path.join(base_path, 'train_ibl_choice.yaml')
 with open(train_choice_path, 'r') as file:
     yaml_content = file.read()

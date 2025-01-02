@@ -26,4 +26,4 @@ do
     sbatch eval.sh $line block
     sbatch eval.sh $line wheel
     sbatch eval.sh $line whisker
-done < /home/ywang74/Dev/poyo_ibl/data/test_eids.txt
+done < /u/ywang74/Dev/poyo_ibl/data/test_eids.txt
