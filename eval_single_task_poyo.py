@@ -395,7 +395,6 @@ if args.behavior == "wheel":
     wh_timestamps = session_timestamp[session_id]['WHEEL']
     wh_subtask_index = session_subtask_index[session_id]['WHEEL']
 
-    wh_timestamps = test_data.wheel.timestamps
     wh_gt_vals = wh_gt.squeeze()
     wh_pred_vals = wh_pred.squeeze()
     
@@ -424,7 +423,6 @@ if args.behavior == "whisker":
     me_timestamps = session_timestamp[session_id]['WHISKER']
     me_subtask_index = session_subtask_index[session_id]['WHISKER']
 
-    me_timestamps = test_data.whisker.timestamps
     me_gt_vals = me_gt.squeeze()
     me_pred_vals = me_pred.squeeze()
     
