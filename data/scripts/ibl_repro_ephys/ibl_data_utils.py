@@ -471,19 +471,24 @@ def load_anytime_behaviors(one, eid, n_workers=os.cpu_count()):
 
     behaviors = [
         "wheel-speed",
-        "left-whisker-motion-energy", 
-        "right-whisker-motion-energy",
+        "whisker-motion-energy", 
         "body-motion-energy",
-        # "wheel-position", 
+        # "pupil-diameter", 
         # "wheel-velocity", 
-        # "left-pupil-diameter", 
-        # "right-pupil-diameter",
-        # "lightning-pose-left-pupil-diameter", 
-        # "lightning-pose-right-pupil-diameter"
     ]
     @globalize
     def load_beh(beh):
-        return beh, load_target_behavior(one, eid, beh)
+        if beh == "whisker-motion-energy":
+            target_dict = load_target_behavior(one, eid, "left-whisker-motion-energy")
+            if "skip" in target_dict.keys():
+                target_dict = load_target_behavior(one, eid, "right-whisker-motion-energy")
+        elif beh == "pupil-diameter":
+            target_dict = load_target_behavior(one, eid, "lightning-pose-left-pupil-diameter")
+            if "skip" in target_dict.keys():
+                target_dict = load_target_behavior(one, eid, "lightning-pose-right-pupil-diameter")
+        else:
+            target_dict = load_target_behavior(one, eid, beh)
+        return beh, target_dict
     
     behave_dict = {}
     with multiprocessing.Pool(processes=n_workers) as p:

@@ -230,12 +230,8 @@ wheel = IrregularTimeSeries(
 )
 
 # Extract whisker
-try:
-    me_timestamps = behave_dict["left-whisker-motion-energy"]["times"]
-    me_values = behave_dict["left-whisker-motion-energy"]["values"].reshape(-1,1)
-except:
-    me_timestamps = behave_dict["right-whisker-motion-energy"]["times"]
-    me_values = behave_dict["right-whisker-motion-energy"]["values"].reshape(-1,1)
+me_timestamps = behave_dict["whisker-motion-energy"]["times"]
+me_values = behave_dict["whisker-motion-energy"]["values"].reshape(-1,1)
 behavior_type = np.ones_like(me_timestamps, dtype=np.int64) * 0
 eval_mask = np.zeros_like(me_timestamps, dtype=bool)
 for i in range(len(trials)):
