@@ -82,11 +82,11 @@ def merge_probes(spikes_list, clusters_list):
 def load_trials_and_mask(
     one, 
     eid, 
-    min_rt=0.0, 
-    max_rt=10., 
+    min_rt=0.08, 
+    max_rt=2., 
     nan_exclude="default", 
     min_trial_len=None,
-    max_trial_len=10, 
+    max_trial_len=None, 
     exclude_unbiased=False, 
     exclude_nochoice=True, 
     sess_loader=None,
@@ -583,10 +583,8 @@ def prepare_data(one, eid, params, n_workers=os.cpu_count()):
         clusters_list.append(tmp_clusters)
     spikes, clusters = merge_probes(spikes_list, clusters_list)
 
-    _, good_trials_mask = load_trials_and_mask(one=one, eid=eid)
-
     trials_df, trials_mask = load_trials_and_mask(
-        one=one, eid=eid, min_rt=0., max_rt=10., 
+        one=one, eid=eid, max_trial_len=10.0, 
     )
         
     behave_dict = load_anytime_behaviors(one, eid, n_workers=n_workers)
@@ -614,7 +612,7 @@ def prepare_data(one, eid, params, n_workers=os.cpu_count()):
         "trials_df": trials_df,
         "trials_mask": trials_mask
     }
-    return neural_dict, behave_dict, meta_data, trials_data, good_trials_mask
+    return neural_dict, behave_dict, meta_data, trials_data, trials_mask
 
 
 def standardize_lfp_data(lfp_data, means=None, stds=None):
@@ -686,10 +684,10 @@ def align_data(
         aligned_binned_behaviors[beh] = np.array([y for y in aligned_binned_behaviors[beh]], 
             dtype=float).reshape((num_trials, -1)
         )
-        if beh in DYNAMIC_VARS:
-            top = aligned_binned_behaviors[beh] - np.min(aligned_binned_behaviors[beh])
-            bottom = np.max(aligned_binned_behaviors[beh]) - np.min(aligned_binned_behaviors[beh])
-            aligned_binned_behaviors[beh] = top / bottom
+        # if beh in DYNAMIC_VARS:
+        #     top = aligned_binned_behaviors[beh] - np.min(aligned_binned_behaviors[beh])
+        #     bottom = np.max(aligned_binned_behaviors[beh]) - np.min(aligned_binned_behaviors[beh])
+        #     aligned_binned_behaviors[beh] = top / bottom
     return (
         aligned_binned_spikes, 
         aligned_binned_behaviors,

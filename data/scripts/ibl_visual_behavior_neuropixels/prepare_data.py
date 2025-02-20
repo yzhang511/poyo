@@ -32,68 +32,73 @@ from kirby.taxonomy import (
     Species,
     SubjectDescription,
 )
-np.random.seed(42)
+
+SEED = 42
+np.random.seed(SEED)
 
 # -------
 # SET UP
 # -------
 ap = argparse.ArgumentParser()
-ap.add_argument("--eid", type=str, default="c7bf2d49-4937-4597-b307-9f39cb1c7b16")
+ap.add_argument("--eid", type=str)
 ap.add_argument("--base_path", type=str, default="../../")
+ap.add_argument("--unit_filter", type=bool, default=False)
+ap.add_argument("--unaligned", type=bool, default=False)
 args = ap.parse_args()
 
-base_path = args.base_path
 eid = args.eid
+base_path = args.base_path
 
 logging.info(f"Processing session: {eid}")
 
-params = {
-    'interval_len': 2, 
-    'binsize': 0.02, 
-    'single_region': False, 
-    'align_time': 'stimOn_times', 
-    'time_window': (-.5, 1.5), 
-    'fr_thresh': 0.5
-}
+params = {'interval_len': 2, 'binsize': 0.02, 'single_region': False, 'fr_thresh': 0.5}
 
-beh_names = [
-    "choice", 
-    "reward", 
-    "block",
-    "wheel-speed", 
-    "whisker-motion-energy", 
-]
+if not args.unaligned:
+    params.update({'align_time': 'stimOn_times', 'time_window': (-.5, 1.5)})
 
-DYNAMIC_VARS = list(filter(lambda x: x not in ["choice", "reward", "block"], beh_names))
+STATIC_VARS = ["choice", "reward", "block"]
+DYNAMIC_VARS = ["wheel-speed", "whisker-motion-energy"]
 
 one = ONE(
     base_url='https://openalyx.internationalbrainlab.org', 
     password='international', 
 )
 
-bwm_df = pd.read_csv('2023_12_bwm_release.csv', index_col=0)
-
 # ---------
 # Load Data
 # ---------
-neural_dict, _, meta_data, trials_data, _ = prepare_data(
-    one, eid, params, n_workers=1
-)
+neural_dict, _, meta_data, trials_data, _ = prepare_data(one, eid, params, n_workers=1)
 regions, beryl_reg = list_brain_regions(neural_dict, **params)
-region_cluster_ids = select_brain_regions(
-    neural_dict, beryl_reg, regions, **params
-)
-binned_spikes, clusters_used_in_bins = bin_spiking_data(
-    region_cluster_ids, 
-    neural_dict, 
-    trials_df=trials_data['trials_df'], 
-    n_workers=1, 
-    **params
-)
-# Filter out inactive neurons
-avg_fr = binned_spikes.sum(1).mean(0) / params['interval_len']
-active_neuron_ids = np.argwhere(avg_fr > 1/params['fr_thresh']).flatten()
+region_cluster_ids = select_brain_regions(neural_dict, beryl_reg, regions, **params)
 
+if args.unaligned:
+    intervals = create_intervals(
+        start_time=0, 
+        end_time=neural_dict["spike_times"].max(), 
+        interval_len=params["interval_len"]
+    )
+    binned_spikes, clusters_used_in_bins = bin_spiking_data(
+        region_cluster_ids, 
+        neural_dict, 
+        intervals=intervals, 
+        n_workers=1, 
+        **params
+    )
+else:
+    binned_spikes, clusters_used_in_bins = bin_spiking_data(
+        region_cluster_ids, 
+        neural_dict, 
+        trials_df=trials_data['trials_df'], 
+        n_workers=1, 
+        **params
+    )
+
+if args.unit_filter:
+    # Filter out inactive neurons
+    avg_fr = binned_spikes.sum(1).mean(0) / params['interval_len']
+    active_neuron_ids = np.argwhere(avg_fr > 1/params['fr_thresh']).flatten()
+else:
+    active_neuron_ids = np.arange(len(avg_fr))
 
 # -------------------------
 # Extract Spiking Activity
@@ -146,38 +151,33 @@ spikes.sort()
 # Extract Trials
 # ---------------
 logging.info(f"Extracting trials ...")
-"""
-Sync trials mask.
-"""
-trial_mask = trials_data['trials_mask']
-binned_spikes, clusters_used_in_bins = bin_spiking_data(
-    region_cluster_ids, neural_dict, trials_df=trials_data['trials_df'], n_workers=1, **params
-)
-binned_behaviors, behavior_masks = bin_behaviors(
-    one, 
-    eid, 
-    DYNAMIC_VARS,
-    trials_df=trials_data['trials_df'], 
-    allow_nans=True, 
-    n_workers=1, 
-    **params
-)
+
+if not args.unaligned:
+    trial_mask = trials_data['trials_mask']
+    binned_behaviors, behavior_masks = bin_behaviors(
+        one, eid, DYNAMIC_VARS, trials_df=trials_data['trials_df'], allow_nans=True, **params
+    )
+else:
+    trial_mask = np.arange(len(intervals))
+    binned_behaviors, behavior_masks = bin_behaviors(
+        one, eid, DYNAMIC_VARS, intervals=intervals, allow_nans=True, **params
+    )
 align_bin_spikes, align_bin_beh, _, target_mask, _ = align_data(
-    binned_spikes, 
-    binned_behaviors, 
-    None, 
-    list(binned_behaviors.keys()), 
-    trials_data["trials_mask"], 
+    binned_spikes, binned_behaviors, None, list(binned_behaviors.keys()), trial_mask, 
 )
 trial_mask = np.array(target_mask).astype(bool).tolist()
-trials_data['trials_df'] = trials_data['trials_df'][trial_mask]
 
-start_time = (
-    trials_data['trials_df'][params['align_time']] + params['time_window'][0]
-)
-end_time = (
-    trials_data['trials_df'][params['align_time']] + params['time_window'][1]
-)
+if not args.unaligned:
+    trials_data['trials_df'] = trials_data['trials_df'][trial_mask]
+    start_time = (
+        trials_data['trials_df'][params['align_time']] + params['time_window'][0]
+    )
+    end_time = (
+        trials_data['trials_df'][params['align_time']] + params['time_window'][1]
+    )
+else:
+    intervals = intervals[trial_mask]
+    start_time, end_time = (intervals.T[0]), (intervals.T[1])
 
 max_num_trials = sum(trial_mask)
 trial_idxs = np.random.choice(np.arange(max_num_trials), max_num_trials, replace=False)
@@ -246,50 +246,45 @@ whisker = IrregularTimeSeries(
     domain=Interval(trials.start[0], trials.end[-1]),
 )   
 
-# Extract choice 
-def map_choice(data):
-    choice_map = {"-1": 0, "1": 1}
-    return choice_map[str(int(data))]
+if not args.unaligned:
+    # Extract choice 
+    def map_choice(data):
+        choice_map = {"-1": 0, "1": 1}
+        return choice_map[str(int(data))]
+    choice = trials_data['trials_df'].choice
+    stim_start_times = start_time.to_numpy()
+    stim_end_times = end_time.to_numpy()
+    # create data object for choice and block
+    choice = Interval(
+        start=stim_start_times,
+        end=stim_end_times,
+        choice=choice.apply(map_choice).to_numpy(),
+        timestamps=stim_start_times / 2.0 + stim_end_times / 2.0,
+        timekeys=["start", "end", "timestamps"],
+    )
 
-choice = trials_data['trials_df'].choice
+    # Extract block
+    def map_block(data):
+        block_map = {"0.2": 0, "0.5": 1, "0.8": 2}
+        return block_map[str(data)]
+    block = trials_data['trials_df'].probabilityLeft
+    block = Interval(
+        start=stim_start_times,
+        end=stim_end_times,
+        block=block.apply(map_block).to_numpy(),
+        timestamps=stim_start_times / 2.0 + stim_end_times / 2.0,
+        timekeys=["start", "end", "timestamps"],
+    )
 
-stim_start_times = start_time.to_numpy()
-stim_end_times = end_time.to_numpy()
-
-# create data object for choice and block
-choice = Interval(
-    start=stim_start_times,
-    end=stim_end_times,
-    choice=choice.apply(map_choice).to_numpy(),
-    timestamps=stim_start_times / 2.0 + stim_end_times / 2.0,
-    timekeys=["start", "end", "timestamps"],
-)
-
-# Extract block
-def map_block(data):
-    block_map = {"0.2": 0, "0.5": 1, "0.8": 2}
-    return block_map[str(data)]
-
-block = trials_data['trials_df'].probabilityLeft
-
-block = Interval(
-    start=stim_start_times,
-    end=stim_end_times,
-    block=block.apply(map_block).to_numpy(),
-    timestamps=stim_start_times / 2.0 + stim_end_times / 2.0,
-    timekeys=["start", "end", "timestamps"],
-)
-
-# Extract reward
-reward = (trials_data["trials_df"]["rewardVolume"] > 1).astype(int).to_numpy()
-reward = Interval(
-    start=stim_start_times,
-    end=stim_end_times,
-    reward=reward,
-    timestamps=stim_start_times / 2.0 + stim_end_times / 2.0,
-    timekeys=["start", "end", "timestamps"],
-)
-
+    # Extract reward
+    reward = (trials_data["trials_df"]["rewardVolume"] > 1).astype(int).to_numpy()
+    reward = Interval(
+        start=stim_start_times,
+        end=stim_end_times,
+        reward=reward,
+        timestamps=stim_start_times / 2.0 + stim_end_times / 2.0,
+        timekeys=["start", "end", "timestamps"],
+    )
 
 
 # -----------------
@@ -337,22 +332,21 @@ with db.new_session() as session:
     )
 
     # register session
-    session_start, session_end = (
-        trials.start[0],
-        trials.end[-1],
-    )
-
-    data = Data(
-        spikes=spikes,
-        units=units,
-        trials=trials,
-        wheel=wheel,
-        whisker=whisker,
-        choice=choice,
-        block=block,
-        reward=reward,
-        domain=Interval(session_start, session_end),
-    )
+    session_start, session_end = (trials.start[0], trials.end[-1])
+    
+    if not args.unaligned:
+        data = Data(
+            spikes=spikes, units=units, trials=trials,
+            wheel=wheel, whisker=whisker,
+            choice=choice, block=block, reward=reward,
+            domain=Interval(session_start, session_end),
+        )
+    else:
+        data = Data(
+            spikes=spikes, units=units, trials=trials,
+            wheel=wheel, whisker=whisker,
+            domain=Interval(session_start, session_end),
+        )
 
     session.register_data(data)
 
