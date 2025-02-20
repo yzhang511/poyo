@@ -1,4 +1,5 @@
 """Load data, processes it, save it."""
+import os
 import sys
 import argparse
 import numpy as np
@@ -8,15 +9,16 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 from one.api import ONE
-from data.scripts.ibl_repro_ephys.ibl_data_utils import (
+from data.scripts.ibl_visual_behavior_neuropixels.ibl_data_utils import (
     prepare_data,
     select_brain_regions, 
     list_brain_regions, 
     bin_spiking_data,
     bin_behaviors,
-    align_data,
+    align_spike_behavior,
     load_target_behavior,
     load_anytime_behaviors,
+    create_intervals, 
 )
 
 from kirby.data import (
@@ -57,7 +59,7 @@ if not args.unaligned:
     params.update({'align_time': 'stimOn_times', 'time_window': (-.5, 1.5)})
 
 STATIC_VARS = ["choice", "reward", "block"]
-DYNAMIC_VARS = ["wheel-speed", "whisker-motion-energy"]
+DYNAMIC_VARS = ["wheel-speed", "whisker-motion-energy", "pupil-diameter"]
 
 one = ONE(
     base_url='https://openalyx.internationalbrainlab.org', 
@@ -98,7 +100,7 @@ if args.unit_filter:
     avg_fr = binned_spikes.sum(1).mean(0) / params['interval_len']
     active_neuron_ids = np.argwhere(avg_fr > 1/params['fr_thresh']).flatten()
 else:
-    active_neuron_ids = np.arange(len(avg_fr))
+    active_neuron_ids = np.arange(binned_spikes.shape[-1])
 
 # -------------------------
 # Extract Spiking Activity
@@ -158,12 +160,12 @@ if not args.unaligned:
         one, eid, DYNAMIC_VARS, trials_df=trials_data['trials_df'], allow_nans=True, **params
     )
 else:
-    trial_mask = np.arange(len(intervals))
+    trial_mask = None
     binned_behaviors, behavior_masks = bin_behaviors(
         one, eid, DYNAMIC_VARS, intervals=intervals, allow_nans=True, **params
     )
-align_bin_spikes, align_bin_beh, _, target_mask, _ = align_data(
-    binned_spikes, binned_behaviors, None, list(binned_behaviors.keys()), trial_mask, 
+align_bin_spikes, align_bin_beh, target_mask = align_spike_behavior(
+    binned_spikes, binned_behaviors, list(binned_behaviors.keys()), trial_mask, 
 )
 trial_mask = np.array(target_mask).astype(bool).tolist()
 
@@ -291,12 +293,18 @@ if not args.unaligned:
 # Save Data Object
 # -----------------
 logging.info(f"Saving data ...")
-import os
-os.makedirs(f'{base_path}/processed/ibl_{eid}', exist_ok=True)
-os.makedirs(f'{base_path}/raw', exist_ok=True)
+
+raw_folder_path = f'{base_path}/raw/'
+if args.unaligned:
+    processed_folder_path = f'{base_path}/processed/{eid}_unaligned/'
+else:
+    processed_folder_path = f'{base_path}/processed/{eid}_aligned/'
+os.makedirs(raw_folder_path, exist_ok=True)
+os.makedirs(processed_folder_path, exist_ok=True)
+
 db = DatasetBuilder(
-    raw_folder_path=f'{base_path}/raw/',
-    processed_folder_path=f'{base_path}/processed/ibl_{eid}/',
+    raw_folder_path=raw_folder_path,
+    processed_folder_path=processed_folder_path,
     # metadata for the dataset
     experiment_name=eid,
     origin_version='',

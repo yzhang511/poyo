@@ -146,16 +146,6 @@ def select_brain_regions(regressors, beryl_reg, region, **kwargs):
     return reg_clu_ids
 
 
-def create_intervals(start_time, end_time, interval_len):
-    interval_begs = np.arange(
-        start_time, end_time-interval_len, interval_len
-    )
-    interval_ends = np.arange(
-        start_time+interval_len, end_time, interval_len
-    )
-    return np.c_[interval_begs, interval_ends]
-
-
 def get_spike_data_per_interval(
     times, 
     clusters, 
@@ -255,110 +245,121 @@ def bin_spiking_data(
         binned_list = [x.T for x in binned_array]   
     return np.array(binned_list), clusters_used_in_bins
 
-
 def load_target_behavior(one, eid, target):
-    
+    """
+    Parameters
+    ----------
+    target : str
+        'wheel-position' | 'wheel-velocity' | 'wheel-speed' | 
+        'left-whisker-motion-energy' | 'right-whisker-motion-energy' | 
+        'left-pupil-diameter' | 'right-pupil-diameter' |
+        'left-camera-left-paw-speed' | 'left-camera-right-paw-speed' | 
+        'right-camera-left-paw-speed' | 'right-camera-right-paw-speed' |
+        'left-nose-speed' | 'right-nose-speed'
+    one : 
+    eid : str
+
+    Returns
+    -------
+    dict
+        'times': timestamps for behavior signal
+        'values': associated values
+        'skip': bool, True if there was an error loading data
+    """
+
+    # To load wheel and motion energy, we just use the SessionLoader, e.g.
     sess_loader = SessionLoader(one, eid)
     
+    # wheel is a dataframe that contains wheel times and position interpolated to a uniform sampling rate, velocity and
+    # acceleration computed using Gaussian smoothing
     try:
-        if target == "wheel-position":
+        if target == 'wheel-position':
             sess_loader.load_wheel()
             beh_dict = {
-                "times": sess_loader.wheel["times"].to_numpy(),
-                "values": sess_loader.wheel["position"].to_numpy(),
-                "skip": False,
+                'times': sess_loader.wheel['times'].to_numpy(),
+                'values': sess_loader.wheel['position'].to_numpy()
             }
-        elif target == "wheel-velocity":
+        elif target == 'wheel-velocity':
             sess_loader.load_wheel()
             beh_dict = {
-                "times": sess_loader.wheel["times"].to_numpy(),
-                "values": sess_loader.wheel["velocity"].to_numpy(),
-                "skip": False,
+                'times': sess_loader.wheel['times'].to_numpy(),
+                'values': sess_loader.wheel['velocity'].to_numpy()
             }
-        elif target == "wheel-speed":
+        elif target == 'wheel-speed':
             sess_loader.load_wheel()
             beh_dict = {
-                "times": sess_loader.wheel["times"].to_numpy(),
-                "values": np.abs(sess_loader.wheel["velocity"].to_numpy()),
-                "skip": False,
+                'times': sess_loader.wheel['times'].to_numpy(),
+                'values': np.abs(sess_loader.wheel['velocity'].to_numpy())
             }
-        elif target == "left-whisker-motion-energy":
-            sess_loader.load_motion_energy(views=["left"])
+        # motion_energy is a dictionary of dataframes, each containing the times and the motion energy for each view
+        # for the side views, they contain columns ['times', 'whiskerMotionEnergy'] for the body view it contains
+        # ['times', 'bodyMotionEnergy']
+        elif target == 'left-whisker-motion-energy':
+            sess_loader.load_motion_energy(views=['left'])
             beh_dict = {
-                "times": sess_loader.motion_energy["leftCamera"]["times"].to_numpy(),
-                "values": sess_loader.motion_energy["leftCamera"]["whiskerMotionEnergy"].to_numpy(),
-                "skip": False,
+                'times': sess_loader.motion_energy['leftCamera']['times'].to_numpy(),
+                'values': sess_loader.motion_energy['leftCamera']['whiskerMotionEnergy'].to_numpy()
             }
-        elif target == "right-whisker-motion-energy":
-            sess_loader.load_motion_energy(views=["right"])
+        elif target == 'right-whisker-motion-energy':
+            sess_loader.load_motion_energy(views=['right'])
             beh_dict = {
-                "times": sess_loader.motion_energy["rightCamera"]["times"].to_numpy(),
-                "values": sess_loader.motion_energy["rightCamera"]["whiskerMotionEnergy"].to_numpy(),
-                "skip": False,
+                'times': sess_loader.motion_energy['rightCamera']['times'].to_numpy(),
+                'values': sess_loader.motion_energy['rightCamera']['whiskerMotionEnergy'].to_numpy()
             }
-        elif target == "body-motion-energy":
-            sess_loader.load_motion_energy(views=["body"])
+        elif target == 'left-pupil-diameter':
+            dlc_left = one.load_object(eid, "leftCamera", attribute=["dlc", "features", "times"], collection="alf")
             beh_dict = {
-                "times": sess_loader.motion_energy["bodyCamera"]["times"].to_numpy(),
-                "values": sess_loader.motion_energy["bodyCamera"]["bodyMotionEnergy"].to_numpy(),
-                "skip": False,
+                'times': dlc_left.times,
+                'values': dlc_left.features.pupilDiameter_smooth
             }
-        elif target == "left-pupil-diameter":
-            dlc_left = one.load_object(
-                eid, "leftCamera", attribute=["dlc", "features", "times"], collection="alf"
-            )
+        elif target == 'right-pupil-diameter':
+            dlc_right = one.load_object(eid, "rightCamera", attribute=["dlc", "features", "times"], collection="alf")
             beh_dict = {
-                "times": dlc_left.times,
-                "values": dlc_left.features.pupilDiameter_smooth,
-                "skip": False,
+                'times': dlc_right.times,
+                'values': dlc_right.features.pupilDiameter_smooth
             }
-        elif target == "right-pupil-diameter":
-            dlc_right = one.load_object(
-                eid, "rightCamera", attribute=["dlc", "features", "times"], collection="alf"
-            )
+        elif target == 'left-camera-left-paw-speed':
+            dlc_left = one.load_object(eid, "leftCamera", attribute=["dlc", "features", "times"], collection="alf")
             beh_dict = {
-                "times": dlc_right.times,
-                "values": dlc_right.features.pupilDiameter_smooth,
-                "skip": False,
+                'times': dlc_left.times,
+                'values': dlc.get_speed(dlc_left.dlc, dlc_left.times, camera="left", feature="paw_l")
             }
-        elif target == "lightning-pose-left-pupil-diameter":
-            lp_left = one.load_object(eid, f"leftCamera", attribute=["lightningPose", "times"])
-            dm1 = np.fabs(
-                lp_left["lightningPose"]["pupil_right_r_x"] - \
-                lp_left["lightningPose"]["pupil_left_r_x"]
-            )
-            dm2 = np.fabs(
-                lp_left["lightningPose"]["pupil_top_r_y"] - \
-                lp_left["lightningPose"]["pupil_bottom_r_y"]
-            )
-            assert (np.allclose(dm1, dm2))
+        elif target == 'left-camera-right-paw-speed':
+            dlc_left = one.load_object(eid, "leftCamera", attribute=["dlc", "features", "times"], collection="alf")
             beh_dict = {
-                "times": lp_left["times"],
-                "values": dm1,
-                "skip": False,
+                'times': dlc_left.times,
+                'values': dlc.get_speed(dlc_left.dlc, dlc_left.times, camera="left", feature="paw_r")
             }
-        elif target == "lightning-pose-right-pupil-diameter":
-            lp_right = one.load_object(eid, f"rightCamera", attribute=["lightningPose", "times"])
-            dm1 = np.fabs(
-                lp_right["lightningPose"]["pupil_right_r_x"] - \
-                lp_right["lightningPose"]["pupil_left_r_x"]
-            )
-            dm2 = np.fabs(
-                lp_right["lightningPose"]["pupil_top_r_y"] - \
-                lp_right["lightningPose"]["pupil_bottom_r_y"]
-            )
-            assert (np.allclose(dm1, dm2))
+        elif target == 'right-camera-left-paw-speed':
+            dlc_right = one.load_object(eid, "rightCamera", attribute=["dlc", "features", "times"], collection="alf")
             beh_dict = {
-                "times": lp_right["times"],
-                "values": dm1,
-                "skip": False,
+                'times': dlc_right.times,
+                'values': dlc.get_speed(dlc_right.dlc, dlc_right.times, camera="right", feature="paw_l")
+            }
+        elif target == 'right-camera-right-paw-speed':
+            dlc_right = one.load_object(eid, "rightCamera", attribute=["dlc", "features", "times"], collection="alf")
+            beh_dict = {
+                'times': dlc_right.times,
+                'values': dlc.get_speed(dlc_right.dlc, dlc_right.times, camera="right", feature="paw_r")
+            }
+        elif target == 'left-nose-speed':
+            dlc_left = one.load_object(eid, "leftCamera", attribute=["dlc", "features", "times"], collection="alf")
+            beh_dict = {
+                'times': dlc_left.times,
+                'values': dlc.get_speed(dlc_left.dlc, dlc_left.times, camera="left", feature="nose_tip")
+            }
+        elif target == 'right-nose-speed':
+            dlc_right = one.load_object(eid, "rightCamera", attribute=["dlc", "features", "times"], collection="alf")
+            beh_dict = {
+                'times': dlc_right.times,
+                'values': dlc.get_speed(dlc_right.dlc, dlc_right.times, camera="right", feature="nose_tip")
             }
         else:
             raise NotImplementedError
     except BaseException as e:
-        print("Error loading %s data" % target)
+        print('Error loading %s data' % target)
         print(e)
-        beh_dict = {"times": None, "values": None, "skip": True}
+        beh_dict = {'times': None, 'values': None, 'skip': True}
  
     return beh_dict
 
@@ -372,24 +373,60 @@ def get_behavior_per_interval(
     n_workers=os.cpu_count(), 
     **kwargs
 ):
-    binsize = kwargs["binsize"]
+    """
+    Format a single session-wide array of target data into a list of interval-based arrays.
+
+    Note: the bin size of the returned data will only be equal to the input `binsize` if that value
+    evenly divides `align_interval`; for example if `align_interval=(0, 0.2)` and `binsize=0.10`,
+    then the returned data will have the correct binsize. If `align_interval=(0, 0.2)` and
+    `binsize=0.06` then the returned data will not have the correct binsize.
+
+    Parameters
+    ----------
+    target_times : array-like
+        time in seconds for each sample
+    target_vals : array-like
+        data samples
+    intervals : 
+        array of time intervals for each recording chunk including trials and non-trials
+    trials_df : pd.DataFrame
+        requires a column that matches `align_event`
+    align_event : str
+        event to align interval to
+        firstMovement_times | stimOn_times | feedback_times
+    align_interval : tuple
+        (align_begin, align_end); time in seconds relative to align_event
+    binsize : float
+        size of individual bins in interval
+    allow_nans : bool, optional
+        False to skip intervals with >0 NaN values in target data
+
+    Returns
+    -------
+    tuple
+        - (list): time in seconds for each interval
+        - (list): data for each interval
+        - (array-like): mask of good intervals (True) and bad intervals (False)
+
+    """
+
+    binsize = kwargs['binsize']
+    interval_len = kwargs['interval_len']
 
     if trials_df is not None:
-        align_event = kwargs["align_time"]
-        align_interval = kwargs["time_window"]
-        interval_len = align_interval[1] - align_interval[0]
+        align_event = kwargs['align_time']
         align_times = trials_df[align_event].values
+        align_interval = kwargs['time_window']
         interval_begs = align_times + align_interval[0]
         interval_ends = align_times + align_interval[1]
     else:
-        assert intervals is not None, \
-            "Require intervals to segment the recording into chunks including trials and non-trials."
+        assert intervals is not None, 'Require intervals to segment the recording into chunks including trials and non-trials.'
         interval_begs, interval_ends = intervals.T
 
     n_intervals = len(interval_begs)
 
     if np.all(np.isnan(interval_begs)) or np.all(np.isnan(interval_ends)):
-        print("Interval times all nan")
+        print('interval times all nan')
         good_interval = np.nan * np.ones(interval_begs.shape[0])
         target_times_list = []
         target_vals_list = []
@@ -399,8 +436,8 @@ def get_behavior_per_interval(
     n_bins = int(np.ceil(interval_len / binsize))
 
     # split data into intervals
-    idxs_beg = np.searchsorted(target_times, interval_begs, side="right")
-    idxs_end = np.searchsorted(target_times, interval_ends, side="left")
+    idxs_beg = np.searchsorted(target_times, interval_begs, side='right')
+    idxs_end = np.searchsorted(target_times, interval_ends, side='left')
     target_times_og_list = [target_times[ib:ie] for ib, ie in zip(idxs_beg, idxs_end)]
     target_vals_og_list = [target_vals[ib:ie] for ib, ie in zip(idxs_beg, idxs_end)]
 
@@ -418,39 +455,34 @@ def get_behavior_per_interval(
         is_good_interval, x_interp, y_interp = False, None, None
         
         if len(target_vals) == 0:
-            skip_reason = "target data not present"
+            skip_reason = 'target data not present'
             return interval_idx, is_good_interval, x_interp, y_interp, skip_reason
         if np.sum(np.isnan(target_vals)) > 0 and not allow_nans:
-            skip_reason = "nans in target data"
+            skip_reason = 'nans in target data'
             return interval_idx, is_good_interval, x_interp, y_interp, skip_reason
         if np.isnan(interval_begs[interval_idx]) or np.isnan(interval_ends[interval_idx]):
-            skip_reason = "bad interval data"
+            skip_reason = 'bad interval data'
             return interval_idx, is_good_interval, x_interp, y_interp, skip_reason
         if np.abs(interval_begs[interval_idx] - target_time[0]) > binsize:
-            skip_reason = "target data starts too late"
+            skip_reason = 'target data starts too late'
             return interval_idx, is_good_interval, x_interp, y_interp, skip_reason
         if np.abs(interval_ends[interval_idx] - target_time[-1]) > binsize:
-            skip_reason = "target data ends too early"
+            skip_reason = 'target data ends too early'
             return interval_idx, is_good_interval, x_interp, y_interp, skip_reason
 
         is_good_interval, skip_reason = True, None
-        x_interp = np.linspace(
-            interval_begs[interval_idx] + binsize, interval_ends[interval_idx], n_bins
-        )
+        x_interp = np.linspace(interval_begs[interval_idx] + binsize, interval_ends[interval_idx], n_bins)
         if len(target_vals.shape) > 1 and target_vals.shape[1] > 1:
             n_dims = target_vals.shape[1]
             y_interp_tmps = []
             for n in range(n_dims):
-                y_interp_tmps.append(
-                    interp1d(
-                        target_time, target_vals[:, n], kind="linear", fill_value="extrapolate"
-                    )(x_interp)
-                )
+                y_interp_tmps.append(interp1d(
+                    target_time, target_vals[:, n], kind='linear',
+                    fill_value='extrapolate')(x_interp))
             y_interp = np.hstack([y[:, None] for y in y_interp_tmps])
         else:
             y_interp = interp1d(
-                target_time, target_vals, kind="linear", fill_value="extrapolate"
-            )(x_interp)
+                target_time, target_vals, kind='linear', fill_value='extrapolate')(x_interp)
         return interval_idx, is_good_interval, x_interp, y_interp, skip_reason
 
     with multiprocessing.Pool(processes=n_workers) as p:
@@ -464,6 +496,7 @@ def get_behavior_per_interval(
                 skip_reasons[res[0]] = res[-1]
         pbar.close()
         p.close()
+
     return target_times_list, target_vals_list, np.array(good_interval), skip_reasons    
 
 
@@ -473,7 +506,7 @@ def load_anytime_behaviors(one, eid, n_workers=os.cpu_count()):
         "wheel-speed",
         "whisker-motion-energy", 
         "body-motion-energy",
-        # "pupil-diameter", 
+        "pupil-diameter", 
         # "wheel-velocity", 
     ]
     @globalize
@@ -483,9 +516,9 @@ def load_anytime_behaviors(one, eid, n_workers=os.cpu_count()):
             if "skip" in target_dict.keys():
                 target_dict = load_target_behavior(one, eid, "right-whisker-motion-energy")
         elif beh == "pupil-diameter":
-            target_dict = load_target_behavior(one, eid, "lightning-pose-left-pupil-diameter")
+            target_dict = load_target_behavior(one, eid, "left-pupil-diameter")
             if "skip" in target_dict.keys():
-                target_dict = load_target_behavior(one, eid, "lightning-pose-right-pupil-diameter")
+                target_dict = load_target_behavior(one, eid, "right-pupil-diameter")
         else:
             target_dict = load_target_behavior(one, eid, beh)
         return beh, target_dict
@@ -513,50 +546,47 @@ def bin_behaviors(
     n_workers=os.cpu_count(),
     **kwargs
 ):
+
     behave_dict, mask_dict = {}, {}
     
     if mask is not None:
         trials_df = trials_df[mask]
 
     if trials_df is not None:        
-        choice = trials_df["choice"].to_numpy()
-        block = trials_df["probabilityLeft"].to_numpy()
-        reward = (trials_df["rewardVolume"] > 1).astype(int).to_numpy()
-        contrast = np.c_[trials_df["contrastLeft"], trials_df["contrastRight"]]
-        contrast = (-1 * np.nan_to_num(contrast, 0)).sum(1)
+        choice = trials_df['choice'].to_numpy()
+        reward = (trials_df['rewardVolume'] > 1).astype(int).to_numpy()
+        contrast = np.c_[trials_df['contrastLeft'], trials_df['contrastRight']]
+        contrast = np.nan_to_num(contrast, 0)
+        stimside = np.argmax(contrast, 1)
+        contrast = contrast.sum(1)
 
         behave_dict.update(
-            {"choice": choice, "block": block, "reward": reward, "contrast": contrast}
+            {'choice': choice, 'stimside': stimside, 'reward': reward, 'contrast': contrast}
         )
         behave_mask = np.ones(len(trials_df)) 
     else:
-        assert intervals is not None, \
-            "Require intervals to segment the recording into chunks including trials and non-trials."
+        assert intervals is not None, 'Require intervals to segment the recording into chunks including trials and non-trials.'
         behave_mask = np.ones(len(intervals)) 
         
     for beh in behaviors:
-        if beh == "whisker-motion-energy":
-            target_dict = load_target_behavior(one, eid, "left-whisker-motion-energy")
-            if "skip" in target_dict.keys():
-                target_dict = load_target_behavior(one, eid, "right-whisker-motion-energy")
-        elif beh == "pupil-diameter":
-            target_dict = load_target_behavior(one, eid, "lightning-pose-left-pupil-diameter")
-            if "skip" in target_dict.keys():
-                target_dict = load_target_behavior(one, eid, "lightning-pose-right-pupil-diameter")
-        elif beh == "body-motion-energy":
-            target_dict = load_target_behavior(one, eid, "body-motion-energy")
+        if beh == 'whisker-motion-energy':
+            target_dict = load_target_behavior(one, eid, 'left-whisker-motion-energy')
+            if 'skip' in target_dict.keys():
+                target_dict = load_target_behavior(one, eid, 'right-whisker-motion-energy')  
+        elif beh == 'pupil-diameter':
+            target_dict = load_target_behavior(one, eid, 'left-pupil-diameter')
+            if 'skip' in target_dict.keys():
+                target_dict = load_target_behavior(one, eid, 'right-pupil-diameter')  
         else:
             target_dict = load_target_behavior(one, eid, beh)
-
-        if target_dict["skip"] == False:
-            target_times, target_vals = target_dict["times"], target_dict["values"]
-            target_times_list, target_vals_list, target_mask, skip_reasons = get_behavior_per_interval(
-                target_times, target_vals, intervals=intervals, 
-                trials_df=trials_df, allow_nans=allow_nans, n_workers=n_workers, **kwargs
-            )
-            behave_dict.update({beh: np.array(target_vals_list, dtype=object)})
-            mask_dict.update({beh: target_mask})
-            behave_mask = np.logical_and(behave_mask, target_mask)
+        target_times, target_vals = target_dict['times'], target_dict['values']
+        target_times_list, target_vals_list, target_mask, skip_reasons = get_behavior_per_interval(
+            target_times, target_vals, intervals=intervals, 
+            trials_df=trials_df, allow_nans=allow_nans, n_workers=n_workers, **kwargs
+        )
+        behave_dict.update({beh: np.array(target_vals_list, dtype=object)})
+        mask_dict.update({beh: target_mask})
+        behave_mask = np.logical_and(behave_mask, target_mask)
 
     if not allow_nans:
         for k, v in behave_dict.items():
@@ -615,84 +645,41 @@ def prepare_data(one, eid, params, n_workers=os.cpu_count()):
     return neural_dict, behave_dict, meta_data, trials_data, trials_mask
 
 
-def standardize_lfp_data(lfp_data, means=None, stds=None):
-    K, T, N = lfp_data.shape
-    if (means is None) and (stds == None):
-        means, stds = np.empty((T, N)), np.empty((T, N))
-
-    std_lfp_data = lfp_data.reshape((K, -1))
-    std_lfp_data[np.isnan(std_lfp_data)] = 0
-    for t in range(T):
-        mean = np.mean(std_lfp_data[:, t*N:(t+1)*N])
-        std = np.std(std_lfp_data[:, t*N:(t+1)*N])
-        std_lfp_data[:, t*N:(t+1)*N] -= mean
-        if std != 0:
-            std_lfp_data[:, t*N:(t+1)*N] /= std
-        means[t], stds[t] = mean, std
-    std_lfp_data = std_lfp_data.reshape(K, T, N)
-    return std_lfp_data, means, stds
+def create_intervals(start_time, end_time, interval_len):
+    interval_begs = np.arange(
+        start_time, end_time-interval_len, interval_len
+    )
+    interval_ends = np.arange(
+        start_time+interval_len, end_time, interval_len
+    )
+    return np.c_[interval_begs, interval_ends]
 
 
-def align_data(
-    binned_spikes, 
-    binned_behaviors, 
-    binned_lfp=None,
-    beh_names=[
-        "choice", 
-        "reward", 
-        "block",
-        "wheel-speed", 
-        "whisker-motion-energy",
-        "body-motion-energy",
-    ], 
-    trials_mask=None,
-    nan_thresh=0.3,
-):
-    num_trials = len(binned_spikes)
-    
-    target_mask = [1] * num_trials
-    for beh in beh_names:
-        beh_mask = [1 if x is not None else 0 for x in binned_behaviors[beh]]
-        nan_ratio = 1 - sum(beh_mask) / num_trials
-        print(f"{beh} has {nan_ratio*100.}% NaN trials.")
-        if nan_ratio >= nan_thresh:
-            beh_names.remove(beh)
-            print(f"Remove {beh} due to too many NaN trials!")
-        else:
-            target_mask = target_mask and beh_mask
+def align_spike_behavior(binned_spikes, binned_behaviors, beh_names, trials_mask=None):
+    """Function to verify trial alignment between neural and behavior data.
+    """
+    target_mask = [1] * len(binned_spikes)
+    for beh_name in beh_names:
+        beh_mask = [1 if trial is not None else 0 for trial in binned_behaviors[beh_name]]
+    target_mask = target_mask and beh_mask
 
     if trials_mask is not None:
-        trials_mask = list(trials_mask.to_numpy().astype(int))
-        target_mask = target_mask and trials_mask
+        if not isinstance(trials_mask, np.ndarray):
+            trials_mask = trials_mask.to_numpy()
+        target_mask = target_mask and list(trials_mask.astype(int))
 
-    bad_trial_idxs = np.argwhere(np.array(target_mask) == 0)
+    del_idxs = np.argwhere(np.array(target_mask) == 0)
 
-    aligned_binned_spikes = np.delete(binned_spikes, bad_trial_idxs, axis=0)
-    if binned_lfp is not None:
-        aligned_binned_lfp, means, stds = standardize_lfp_data(
-            np.delete(binned_lfp, bad_trial_idxs, axis=0)
-        )
-    else:
-        aligned_binned_lfp = None
+    aligned_binned_spikes = np.delete(binned_spikes, del_idxs, axis=0)
 
-    num_trials = len(aligned_binned_spikes)
     aligned_binned_behaviors = {}
-    for beh in beh_names:
-        aligned_binned_behaviors.update(
-            {beh: np.delete(binned_behaviors[beh], bad_trial_idxs, axis=0)}
+    for beh_name in beh_names:
+        aligned_binned_behaviors.update({beh_name: np.delete(binned_behaviors[beh_name], del_idxs, axis=0)})
+        aligned_binned_behaviors[beh_name] = np.array(
+                [y for y in aligned_binned_behaviors[beh_name]], dtype=float
+            ).reshape((aligned_binned_spikes.shape[0], -1)
         )
-        aligned_binned_behaviors[beh] = np.array([y for y in aligned_binned_behaviors[beh]], 
-            dtype=float).reshape((num_trials, -1)
-        )
-        # if beh in DYNAMIC_VARS:
-        #     top = aligned_binned_behaviors[beh] - np.min(aligned_binned_behaviors[beh])
-        #     bottom = np.max(aligned_binned_behaviors[beh]) - np.min(aligned_binned_behaviors[beh])
-        #     aligned_binned_behaviors[beh] = top / bottom
-    return (
-        aligned_binned_spikes, 
-        aligned_binned_behaviors,
-        aligned_binned_lfp, 
-        target_mask, 
-        bad_trial_idxs
-    )
+        assert len(aligned_binned_spikes) == len(aligned_binned_behaviors[beh_name]), f'mismatch between spike shape {len(aligned_binned_spikes)} and {beh_name} shape {len(aligned_binned_behaviors[beh_name])}'
     
+    return aligned_binned_spikes, aligned_binned_behaviors, target_mask
+
