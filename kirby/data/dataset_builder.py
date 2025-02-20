@@ -472,12 +472,13 @@ class SessionContextManager:
                     else:
                         raise ValueError(f"Split mask overlap detected in {obj_key}.")
 
-    def save_to_disk(self):
+    def save_to_disk(self, allow_split_mask_overlap=False):
         self._verify_in_context()
         assert self.subject is not None, "A subject must be registered."
         assert self.sortset is not None, "A sortset must be registered."
         assert self.session is not None, "A session must be registered."
-        self.check_no_mask_overlap()
+        if not allow_split_mask_overlap:
+            self.check_no_mask_overlap()
 
         # self.data.subject_id = self.subject.id
         # self.data.session_id = self.session.id

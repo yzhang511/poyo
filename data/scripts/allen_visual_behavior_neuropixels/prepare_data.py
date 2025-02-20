@@ -14,6 +14,8 @@ from kirby.taxonomy import RecordingTech, Species, SubjectDescription, Sex, Task
 from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache
 from tqdm import tqdm
 
+from kirby.utils import seed_everything
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -419,6 +421,31 @@ def get_gabors_splits(gabors_obj, split_ratios=[0.7, 0.1, 0.2]):
     return {"train": train_trials, "valid": valid_trials, "test": test_trials}
 
 
+def get_stim_trial_splits(stim_obj, split_ratios=[0.7, 0.1, 0.2]):
+    
+    if stim_obj is None or len(stim_obj) == 0:
+        return {"train": None, "valid": None, "test": None}
+    import math
+
+    train_boundary = math.floor(len(stim_obj) * split_ratios[0])
+    valid_boundary = math.floor(len(stim_obj) * (split_ratios[0] + split_ratios[1]))
+    test_boundary = math.floor(len(stim_obj) * sum(split_ratios))
+    
+    train_trials = Interval(
+        start=np.array([stim_obj.start[0]]),
+        end=np.array([stim_obj.end[train_boundary - 1]]),
+    )
+    valid_trials = Interval(
+        start=np.array([stim_obj.start[train_boundary]]),
+        end=np.array([stim_obj.end[valid_boundary - 1]]),
+    )
+    test_trials = Interval(
+        start=np.array([stim_obj.start[valid_boundary]]),
+        end=np.array([stim_obj.end[test_boundary - 1]]),
+    )
+    return {"train": train_trials, "valid": valid_trials, "test": test_trials}
+
+
 def collate_splits(
     stimuli_splits_by_key: Dict[str, dict],
     supervision_dict: dict,
@@ -455,7 +482,7 @@ def collate_splits(
         every_interval_by_key[f"{key}:valid"] = splits["valid"]
         every_interval_by_key[f"{key}:test"] = splits["test"]
 
-        if not all([splits["train"], splits["valid"], splits["test"]]):
+        if splits["train"] is None or splits["valid"] is None or splits["test"] is None:
             continue
 
         final_splits_dict["train"] = (
@@ -501,11 +528,54 @@ def collate_splits(
     return final_splits_dict, session_start, session_end
 
 
+def sample_free_behavior_splits(
+    start, 
+    end, 
+    length=1, 
+    sample_frac=0.7,
+):
+
+    sampled_begs = np.arange(start, end-length, length)
+    sampled_ends = np.arange(start+length, end, length)
+    all_chunks = np.c_[sampled_begs, sampled_ends]
+
+    num_samples = int(len(all_chunks) * sample_frac)
+
+    sampled_ids = np.random.choice(range(len(all_chunks)), num_samples, replace=False)
+    sampled_chunks = all_chunks[sampled_ids]
+
+    num_chunk = len(sampled_chunks)
+    train_split = int(num_chunk * 0.7)
+    val_split = int(num_chunk * 0.1)
+    test_split = num_chunk - train_split - val_split 
+
+    train_chunks = sampled_chunks[:train_split]
+    val_chunks = sampled_chunks[train_split:train_split+val_split]
+    test_chunks = sampled_chunks[train_split+val_split:]
+
+    train_trials = Interval(
+        start=np.array(sorted(train_chunks, key=lambda x: x[0])).T[0],
+        end=np.array(sorted(train_chunks, key=lambda x: x[0])).T[1],
+    )
+    valid_trials = Interval(
+        start=np.array(sorted(val_chunks, key=lambda x: x[0])).T[0],
+        end=np.array(sorted(val_chunks, key=lambda x: x[0])).T[1],
+    )
+    test_trials = Interval(
+        start=np.array(sorted(test_chunks, key=lambda x: x[0])).T[0],
+        end=np.array(sorted(test_chunks, key=lambda x: x[0])).T[1],
+    )
+    return {"train": train_trials, "valid": valid_trials, "test": test_trials}
+
+
 def main():
+
+    seed_everything(42)
 
     # Use argparse to extract two arguments from the command line:
     # input_dir and output_dir
     parser = argparse.ArgumentParser()
+    parser.add_argument("--session_id", type=str, default=None)
     parser.add_argument("--input_dir", type=str, default="./raw")
     parser.add_argument("--output_dir", type=str, default="./processed")
     parser.add_argument(
@@ -537,6 +607,10 @@ def main():
 
     # looping through all sessions, there are 58 in total
     for session_id, row in tqdm(sessions.iterrows()):
+
+        if session_id != int(args.session_id) and args.session_id is not None:
+            continue
+
         # load nwb file through the allen sdk
         session_data = cache.get_session_data(session_id)
         stimulus_presentations = session_data.stimulus_presentations
@@ -596,17 +670,33 @@ def main():
             # split each stimuli/behavior and combine them
             # using dedicated get_*_splits helpers into a dictionary
             stimuli_splits_by_key = {
-                "drifting_gratings": get_drifting_gratings_splits(
+                "drifting_gratings": get_stim_trial_splits(
                     supervision_dict.get("drifting_gratings", None)
                 ),
-                "static_gratings": get_static_gratings_splits(
+                "static_gratings": get_stim_trial_splits(
                     supervision_dict.get("static_gratings", None)
                 ),
-                "gabors": get_gabors_splits(supervision_dict.get("gabors", None)),
-                "natural_scenes": get_natural_scenes_splits(
+                "gabors": get_stim_trial_splits(supervision_dict.get("gabors", None)),
+                "natural_scenes": get_stim_trial_splits(
                     supervision_dict.get("natural_scenes", None)
                 ),
             }
+
+            behavior_start, behavior_end = get_behavior_region(
+                supervision_dict.get("running_speed", None),
+                supervision_dict.get("pupil", None),
+                supervision_dict.get("gaze", None),
+            )
+
+            free_behavior_splits = sample_free_behavior_splits(behavior_start, behavior_end)
+
+            stimuli_splits_by_key.update(
+                {
+                    "running_speed": free_behavior_splits,
+                    "pupil": free_behavior_splits,
+                    "gaze": free_behavior_splits,
+                }
+            )
 
             final_splits_dict, session_start, session_end = collate_splits(
                 stimuli_splits_by_key,
@@ -633,7 +723,7 @@ def main():
             session.register_split("valid", final_splits_dict["valid"])
             session.register_split("test", final_splits_dict["test"])
 
-            session.save_to_disk()
+            session.save_to_disk(allow_split_mask_overlap=True)
             logging.info(f"Saved to disk session: {session_id}")
 
     # all sessions added, finish by generating a description file for the entire dataset
