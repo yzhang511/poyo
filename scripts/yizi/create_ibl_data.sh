@@ -2,8 +2,8 @@
 
 #SBATCH --account=bcxj-delta-gpu
 #SBATCH --partition=gpuA40x4
-#SBATCH --job-name="data"
-#SBATCH --output="data.%j.out"
+#SBATCH --job-name="ibl-data"
+#SBATCH --output="ibl-data.%j.out"
 #SBATCH -N 1
 #SBACTH --array=0
 #SBATCH -c 1

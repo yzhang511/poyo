@@ -1,9 +1,0 @@
-- selection:
-    - dandiset: "ibl"
-      sortsets:
-      - c7bf2d49-4937-4597-b307-9f39cb1c7b16
-  config:
-    multitask_readout:
-      - decoder_id: BLOCK
-        metrics:
-          - metric: accuracy

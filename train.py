@@ -54,7 +54,7 @@ def run_training(cfg: DictConfig):
     # prepare tokenizer and transforms
 
     # The transform list is defined in the config file.
-    sequence_length = 2.0
+    sequence_length = 1.0
     transforms = hydra.utils.instantiate(
         cfg.train_transforms, sequence_length=sequence_length
     )

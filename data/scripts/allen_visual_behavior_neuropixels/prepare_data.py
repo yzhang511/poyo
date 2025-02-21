@@ -578,18 +578,16 @@ def main():
     parser.add_argument("--session_id", type=str, default=None)
     parser.add_argument("--input_dir", type=str, default="./raw")
     parser.add_argument("--output_dir", type=str, default="./processed")
-    parser.add_argument(
-        "--include_all_behavior",
-        action="store_true",
-        help="Include residual regions in each session that have only behavior information as part of the trainable data.",
-    )
+    parser.add_argument("--behavior", type=str, choices=["gabors", "static_gratings", "drifting_gratings", "running_speed"])
 
     args = parser.parse_args()
+
+    dandiset = f"allen_visual_behavior_neuropixels_{args.behavior}"
 
     # intiantiate a DatasetBuilder which provides utilities for processing data
     db = DatasetBuilder(
         raw_folder_path=args.input_dir,
-        processed_folder_path=args.output_dir,
+        processed_folder_path=f"{args.output_dir}/{dandiset}",
         # metadata for the dataset
         experiment_name="allen_visual_behavior_neuropixels_2019",
         origin_version="v2",  # allensdk version
@@ -637,22 +635,29 @@ def main():
             # extract experimental metadata
             # there is only one session per subject.
             recording_date = session_data.session_start_time.strftime("%Y%m%d")
-            sortset_id = f"{animal}_{recording_date}"
+            sortset_id = f"mouse_{args.session_id}"
 
             # extract spiking activity
             spikes, units = extract_spikes(session_data, prefix=sortset_id)
 
             # extract behavior and stimuli data
             # using dedicated extract_* helpers into a dictionary
-            supervision_dict = {
-                "running_speed": extract_running_speed(session_data),
-                "gaze": extract_gaze(session_data),
-                "pupil": extract_pupil(session_data),
-                "drifting_gratings": extract_drifting_gratings(stimulus_presentations),
-                "static_gratings": extract_static_gratings(stimulus_presentations),
-                "gabors": extract_gabors(stimulus_presentations),
-                "natural_scenes": extract_natural_scenes(stimulus_presentations),
-            }
+            if args.behavior == "gabors":
+                supervision_dict = {
+                    "gabors": extract_gabors(stimulus_presentations),
+                }
+            elif args.behavior == "static_gratings":
+                supervision_dict = {
+                    "static_gratings": extract_static_gratings(stimulus_presentations),
+                }
+            elif args.behavior == "drifting_gratings":
+                supervision_dict = {
+                    "drifting_gratings": extract_drifting_gratings(stimulus_presentations),
+                }
+            elif args.behavior == "running_speed":
+                supervision_dict = {
+                    "running_speed": extract_running_speed(session_data),
+                }
 
             # register session
             session.register_session(
@@ -669,39 +674,35 @@ def main():
 
             # split each stimuli/behavior and combine them
             # using dedicated get_*_splits helpers into a dictionary
-            stimuli_splits_by_key = {
-                "drifting_gratings": get_stim_trial_splits(
-                    supervision_dict.get("drifting_gratings", None)
-                ),
-                "static_gratings": get_stim_trial_splits(
-                    supervision_dict.get("static_gratings", None)
-                ),
-                "gabors": get_stim_trial_splits(supervision_dict.get("gabors", None)),
-                "natural_scenes": get_stim_trial_splits(
-                    supervision_dict.get("natural_scenes", None)
-                ),
-            }
-
-            behavior_start, behavior_end = get_behavior_region(
-                supervision_dict.get("running_speed", None),
-                supervision_dict.get("pupil", None),
-                supervision_dict.get("gaze", None),
-            )
-
-            free_behavior_splits = sample_free_behavior_splits(behavior_start, behavior_end, length=2)
-
-            stimuli_splits_by_key.update(
-                {
-                    "running_speed": free_behavior_splits,
-                    "pupil": free_behavior_splits,
-                    "gaze": free_behavior_splits,
+            if args.behavior == "gabors":
+                stimuli_splits_by_key = {
+                    "gabors": get_stim_trial_splits(supervision_dict.get("gabors", None))
                 }
-            )
+            elif args.behavior == "static_gratings": 
+                stimuli_splits_by_key = {
+                    "static_gratings": get_stim_trial_splits(
+                        supervision_dict.get("static_gratings", None)
+                    )
+                }
+            elif args.behavior == "drifting_gratings":
+                stimuli_splits_by_key = {
+                    "drifting_gratings": get_stim_trial_splits(
+                        supervision_dict.get("drifting_gratings", None)
+                    )
+                }
+            elif args.behavior == "running_speed":
+                behavior_start, behavior_end = get_behavior_region(
+                    supervision_dict.get("running_speed", None),
+                )
+                free_behavior_splits = sample_free_behavior_splits(behavior_start, behavior_end, length=1)
+                stimuli_splits_by_key = {
+                    "running_speed": free_behavior_splits,
+                }
 
             final_splits_dict, session_start, session_end = collate_splits(
                 stimuli_splits_by_key,
                 supervision_dict,
-                include_all_behavior=args.include_all_behavior,
+                include_all_behavior=False,
             )
 
             data = Data(
@@ -723,7 +724,8 @@ def main():
             session.register_split("valid", final_splits_dict["valid"])
             session.register_split("test", final_splits_dict["test"])
 
-            session.save_to_disk(allow_split_mask_overlap=True)
+            session.save_to_disk(allow_split_mask_overlap=False)
+
             logging.info(f"Saved to disk session: {session_id}")
 
     # all sessions added, finish by generating a description file for the entire dataset
