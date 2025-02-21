@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=bcxj-delta-gpu
 #SBATCH --partition=gpuA40x4
-#SBATCH --job-name="train-allen"
-#SBATCH --output="train-allen.%j.out"
+#SBATCH --job-name="train"
+#SBATCH --output="train.%j.out"
 #SBATCH -N 1
 #SBACTH --array=0
 #SBATCH -c 1
