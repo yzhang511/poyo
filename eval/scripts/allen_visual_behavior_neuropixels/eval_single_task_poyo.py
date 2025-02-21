@@ -5,7 +5,7 @@ import argparse
 import torch
 import random
 
-import omegaconf                 # for loading model configuration from a fil
+import omegaconf
 import hydra
 from hydra import compose, initialize
 from omegaconf import OmegaConf
@@ -30,9 +30,9 @@ from lightning.pytorch.callbacks import (
 )
 import lightning
 
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, r2_score
+from sklearn.metrics import accuracy_score, r2_score
 
-from eval.scripts.ibl_visual_behavior_neuropixels.eval_utils import bin_behaviors, viz_single_cell
+from eval.scripts.allen_visual_behavior_neuropixels.eval_utils import bin_target
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -57,15 +57,14 @@ def _one_hot(arr, T):
 # SET UP
 # -------
 ap = argparse.ArgumentParser()
-ap.add_argument("--eid", type=str, default="c7bf2d49-4937-4597-b307-9f39cb1c7b16")
-ap.add_argument("--behavior", type=str, default="choice")
+ap.add_argument("--session_id", type=str, default="715093703")
+ap.add_argument("--behavior", type=str, default="gabors")
 ap.add_argument("--model_path", type=str, default="../../../logs/lightning_logs/")
 ap.add_argument("--ckpt_name", type=str, default="2xpi3x0u")
 ap.add_argument("--save_path", type=str, default="../../../results/")
-ap.add_argument("--data_path", type=str, default="/projects/bcxj/yzhang39/ibl/datasets/processed/")
+ap.add_argument("--data_path", type=str, default="/projects/bcxj/yzhang39/allen/datasets/processed/")
 ap.add_argument("--config_path", type=str, default="../../../configs/")
-ap.add_argument("--config_name", type=str, default="train_ibl_choice.yaml")
-ap.add_argument("--unaligned", type=bool, default=False)
+ap.add_argument("--config_name", type=str, default="train_allen_gabors.yaml")
 args = ap.parse_args()
 
 save_path = args.save_path
@@ -75,31 +74,24 @@ model_path = args.model_path
 config_name = args.config_name
 ckpt_name = args.ckpt_name
 
-eid = args.eid
-logging.info(f"Evaluating session: {eid}")
+session_id = args.session_id
+behavior = args.behavior
 
-params = {
-    'interval_len': 1, 
-    'binsize': 0.02, 
-    'single_region': False, 
-    'align_time': 'stimOn_times', 
-    'time_window': (-.5, .5), 
-    'fr_thresh': 0.5
-}
+logging.info(f"Evaluating session: {session_id}")
+
+params = {"interval_len": 1., "binsize": 0.02}
 
 # ---------
 # LOAD DATA
 # ---------
-
-dandiset = f"{eid}_unaligned" if args.unaligned else f"{eid}_aligned"
 
 dataset = Dataset(
     root=data_path,
     split="test", # "train"/"valid"/"test"
     include=[{
         "selection": [{
-            "dandiset": dandiset,
-            "sortsets": {eid},
+            "dandiset": f"allen_visual_behavior_neuropixels_{behavior}",
+            "sortsets": {f"mouse_{session_id}"},
         }],
     }],
 )
@@ -119,6 +111,7 @@ model = hydra.utils.instantiate(
 )
 
 sequence_length = params["interval_len"]
+
 transforms = hydra.utils.instantiate(
     cfg.train_transforms, sequence_length=sequence_length
 )
@@ -133,7 +126,7 @@ print("available checkpoints:", checkpoints)
 
 chosen_ckpt = checkpoints[0] if len(checkpoints) > 0 else "last.ckpt"
 ckpt = torch.load(f"{model_path}/{ckpt_name}/{chosen_ckpt}", map_location="cpu")
-state_dict = ckpt["state_dict"]       
+state_dict = ckpt["state_dict"]        
 
 new_state_dict = {}
 for key, value in state_dict.items():
@@ -374,98 +367,69 @@ for batch in tqdm(val_loader):
 # EVAL
 # -----
 
-results = {'Choice': {}, 'Block': {}, 'Whisker':{}, 'Wheel': {}}
+results = {"gabors": {}, "static_gratings": {}, "drifting_gratings": {}, "running_speed": {}}
 
-if args.behavior == "choice":
-    choice = dataset.get_session_data(session_ids[0]).choice.choice
-    choice = session_gt_output[session_ids[0]]['CHOICE']
-    pred = session_pred_output[session_ids[0]]['CHOICE'].argmax(-1)
-    results['Choice']['accuracy'] = accuracy_score(choice, pred)
-    results['Choice']['balanced_accuracy'] = balanced_accuracy_score(choice, pred)
+print(dataset.get_session_data(session_ids[0]))
 
-if args.behavior == "block":
-    block = dataset.get_session_data(session_ids[0]).block.block
-    block = session_gt_output[session_ids[0]]['BLOCK']
-    pred = session_pred_output[session_ids[0]]['BLOCK'].argmax(-1)
-    results['Block']['accuracy'] = accuracy_score(block, pred)
-    results['Block']['balanced_accuracy'] = balanced_accuracy_score(block, pred)
+if args.behavior == "gabors":
+    gt = dataset.get_session_data(session_ids[0]).gabors.gabors_orientation
+    gt = session_gt_output[session_id]['GABOR_ORIENTATION']
+    pred = session_pred_output[session_id]['GABOR_ORIENTATION'].argmax(-1)
+    results['gabors']['accuracy'] = accuracy_score(gt, pred)
+elif args.behavior == "static_gratings":
+    gt = dataset.get_session_data(session_ids[0]).static_gratings.static_gratings
+    gt = session_gt_output[session_id]['STATIC_GRATINGS']
+    pred = session_pred_output[session_id]['STATIC_GRATINGS'].argmax(-1)
+    results['static_gratings']['accuracy'] = accuracy_score(gt, pred)
+elif args.behavior == "drifting_gratings":
+    gt = dataset.get_session_data(session_ids[0]).drifting_gratings.drifting_gratings
+    gt = session_gt_output[session_id]['DRIFTING_GRATINGS']
+    pred = session_pred_output[session_id]['DRIFTING_GRATINGS'].argmax(-1)
+    results['drifting_gratings']['accuracy'] = accuracy_score(gt, pred)
+elif args.behavior == "running_speed":
+    gt = session_gt_output[session_id]['RUNNING_SPEED']
+    pred = session_pred_output[session_id]['RUNNING_SPEED']
+    timestamps = session_timestamp[session_id]['RUNNING_SPEED']
+    subtask_index = session_subtask_index[session_id]['RUNNING_SPEED']
 
-if args.behavior in ["wheel", "whisker"]:
+    gt_vals = gt.squeeze()
+    pred_vals = pred.squeeze()
+
     intervals = np.c_[
-        dataset.get_session_data(session_ids[0]).trials.start, 
-        dataset.get_session_data(session_ids[0]).trials.end, 
+        dataset.get_session_data(session_ids[0]).running_speed.start, 
+        dataset.get_session_data(session_ids[0]).running_speed.end, 
     ]
-
-if args.behavior == "wheel":
-    wh_gt = session_gt_output[session_ids[0]]['WHEEL']
-    wh_pred = session_pred_output[session_ids[0]]['WHEEL']
-    wh_timestamps = session_timestamp[session_ids[0]]['WHEEL']
-    wh_subtask_index = session_subtask_index[session_ids[0]]['WHEEL']
-
-    wh_gt_vals = wh_gt.squeeze()
-    wh_pred_vals = wh_pred.squeeze()
     
-    behave_dict, mask_dict = bin_behaviors(
-        wh_timestamps,
-        wh_gt_vals.numpy(),
-        intervals=intervals, 
-        beh = 'wheel',
-        **params
+    _, binned_gt, _, _ = bin_target(
+        timestamps,
+        gt_vals.numpy(),
+        start=intervals.T[0], 
+        end=intervals.T[1],
+        binsize=params["binsize"], 
+        length=sequence_length,
     )
-    
-    binned_gt = behave_dict['wheel']
-    
-    behave_dict, mask_dict = bin_behaviors(
-        wh_timestamps,
-        wh_pred_vals.numpy(),
-        intervals=intervals, 
-        beh = 'wheel',
-        **params
+        
+    _, binned_pred, _, _ = bin_target(
+        timestamps,
+        pred_vals.numpy(),
+        start=intervals.T[0], 
+        end=intervals.T[1],
+        binsize=params["binsize"], 
+        length=sequence_length,
     )
-    binned_pred = behave_dict['wheel']
 
-if args.behavior == "whisker":
-    me_gt = session_gt_output[session_ids[0]]['WHISKER']
-    me_pred = session_pred_output[session_ids[0]]['WHISKER']
-    me_timestamps = session_timestamp[session_ids[0]]['WHISKER']
-    me_subtask_index = session_subtask_index[session_ids[0]]['WHISKER']
-
-    me_gt_vals = me_gt.squeeze()
-    me_pred_vals = me_pred.squeeze()
-    
-    behave_dict, mask_dict = bin_behaviors(
-        me_timestamps,
-        me_gt_vals.numpy(),
-        intervals=intervals, 
-        beh = 'whisker',
-        **params
-    )
-    
-    binned_gt = behave_dict['whisker']
-    
-    behave_dict, mask_dict = bin_behaviors(
-        me_timestamps,
-        me_pred_vals.numpy(),
-        intervals=intervals, 
-        beh = 'whisker',
-        **params
-    )
-    binned_pred = behave_dict['whisker']
-
-if args.behavior in ["wheel", "whisker"]:
-    
-    results[args.behavior]["r2_trial"] = r2_score(binned_gt.flatten(), binned_pred.flatten())
+    results[behavior]["r2_trial"] = r2_score(binned_gt.flatten(), binned_pred.flatten())
 
     save_res = {
-        'gt': binned_gt,
-        'pred': binned_pred,
-        'beh_name': args.behavior,
-        'eid': eid
+        "gt": binned_gt,
+        "pred": binned_pred,
+        "beh_name": behavior,
+        "session_id": session_id
     }
 
 print(results)
 
-res_path = f"{save_path}/{eid}/"
+res_path = f"{save_path}/{session_id}/"
 if not os.path.exists(res_path):
     os.makedirs(res_path)
 np.save(f"{res_path}/{args.behavior}.npy", results)

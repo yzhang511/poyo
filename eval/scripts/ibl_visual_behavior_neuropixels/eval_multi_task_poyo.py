@@ -32,7 +32,7 @@ import lightning
 
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 
-from scripts.eval_utils import bin_behaviors, viz_single_cell
+from eval.scripts.ibl_visual_behavior_neuropixels.eval_utils import bin_behaviors, viz_single_cell
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -58,11 +58,11 @@ def _one_hot(arr, T):
 # -------
 ap = argparse.ArgumentParser()
 ap.add_argument("--eid", type=str, default="c7bf2d49-4937-4597-b307-9f39cb1c7b16")
-ap.add_argument("--model_path", type=str, default="./logs/lightning_logs/")
+ap.add_argument("--model_path", type=str, default="../../../logs/lightning_logs/")
 ap.add_argument("--ckpt_name", type=str, default="2xpi3x0u")
-ap.add_argument("--save_path", type=str, default="./results/")
-ap.add_argument("--data_path", type=str, default="./data/processed/")
-ap.add_argument("--config_path", type=str, default="./configs/")
+ap.add_argument("--save_path", type=str, default="../../../results/")
+ap.add_argument("--data_path", type=str, default="/projects/bcxj/yzhang39/ibl/datasets/processed/")
+ap.add_argument("--config_path", type=str, default="../../../configs/")
 ap.add_argument("--config_name", type=str, default="train_ibl.yaml")
 args = ap.parse_args()
 
@@ -72,8 +72,8 @@ config_path = args.config_path
 model_path = args.model_path
 config_name = args.config_name
 ckpt_name = args.ckpt_name
-eid = args.eid
 
+eid = args.eid
 logging.info(f"Evaluating session: {eid}")
 
 params = {
@@ -94,7 +94,7 @@ dataset = Dataset(
     split="test", # "train"/"valid"/"test"
     include=[{
         "selection": [{
-            "dandiset": "ibl",
+            "dandiset": "ibl",   # TODO: change!
             "sortsets": {eid},
         }],
     }],
@@ -193,7 +193,7 @@ wrapper = train_wrapper.TrainWrapper(
 callbacks = [
     ModelSummary(max_depth=2),  # Displays the number of parameters in the model.
     ModelCheckpoint(
-        dirpath=f"logs/lightning_logs/",
+        dirpath=f"../../../logs/lightning_logs/",
         save_last=True,
         save_on_train_epoch_end=True,
         every_n_epochs=cfg.eval_epochs,
@@ -364,7 +364,7 @@ for batch in tqdm(val_loader):
 results = {'Choice': {}, 'Block': {}, 'Whisker':{}, 'Wheel': {}}
 
 # Eval discrete behaviors
-session_id = f'ibl/{eid}'
+session_id = f'ibl/{eid}'                               s# TODO: change!
 choice = session_gt_output[session_id]['CHOICE']
 pred = session_pred_output[session_id]['CHOICE'].argmax(-1)
 results['Choice']['accuracy'] = accuracy_score(choice, pred)

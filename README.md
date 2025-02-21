@@ -15,7 +15,7 @@ pip install -r ibl_requirements.txt  # install packages needed to load IBL data
 cd scripts/yizi
 sbatch create_allen_data.sh 715093703 gabors
 ```
-Here, `715093703` is the session ID, and `gabors` is the behavior; available behaviors are `gabors`, `static_gratings`, and `drifting_gratings`, and `running_speed`.
+Here, `715093703` is the session ID, and `gabors` is the behavior; available behaviors are `gabors`, `static_gratings`, and `running_speed`.
 
 2. Change session ID in data config: `configs/dataset/allen_gabors.yaml` for each behavior.
 
@@ -73,9 +73,9 @@ Here, `d23a44ef-1402-4ed7-97f5-47e9a7a504d9` is the session ID, and `True` is a 
 cd scripts/
 python calculate_normalization_scales.py \
        --data_root /projects/bcxj/$user_name/ibl/datasets/processed/ \
-       --dataset_config ../configs/dataset/ibl_wheel.yaml
+       --dataset_config ../configs/dataset/ibl_wheel_aligned.yaml
 ```
-Paste the mean and std to data config file `ibl_wheel.yaml`. 
+Paste the mean and std to data config file `ibl_wheel_aligned.yaml`. 
 
 4. Change the params for unit drop out in `configs/train_ibl_choice.yaml` for each behavior: 
 ```
