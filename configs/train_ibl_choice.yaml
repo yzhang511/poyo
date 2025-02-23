@@ -17,6 +17,7 @@ train_transforms:
 
 data_root: /projects/bcxj/yzhang39/ibl/datasets/processed/
 seed: 42
+sequence_length: 2.0
 batch_size: 128
 eval_epochs: 10
 epochs: 1000

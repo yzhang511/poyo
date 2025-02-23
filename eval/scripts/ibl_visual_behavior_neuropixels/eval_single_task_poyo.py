@@ -79,7 +79,7 @@ eid = args.eid
 logging.info(f"Evaluating session: {eid}")
 
 params = {
-    'interval_len': 1, 
+    'interval_len': 2, 
     'binsize': 0.02, 
     'single_region': False, 
     'align_time': 'stimOn_times', 

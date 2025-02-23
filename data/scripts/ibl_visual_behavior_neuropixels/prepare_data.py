@@ -53,10 +53,10 @@ base_path = args.base_path
 
 logging.info(f"Processing session: {eid}")
 
-params = {'interval_len': 1., 'binsize': 0.02, 'single_region': False, 'fr_thresh': 0.5}
+params = {'interval_len': 2., 'binsize': 0.02, 'single_region': False, 'fr_thresh': 0.5}
 
 if not args.unaligned:
-    params.update({'align_time': 'stimOn_times', 'time_window': (-.5, .5)})
+    params.update({'align_time': 'stimOn_times', 'time_window': (-.5, 1.5)})
 
 STATIC_VARS = ["choice", "reward", "block"]
 DYNAMIC_VARS = ["wheel-speed", "whisker-motion-energy", "pupil-diameter"]
