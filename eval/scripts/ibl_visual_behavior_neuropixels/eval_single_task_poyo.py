@@ -374,21 +374,21 @@ for batch in tqdm(val_loader):
 # EVAL
 # -----
 
-results = {'Choice': {}, 'Block': {}, 'Whisker':{}, 'Wheel': {}}
+results = {'choice': {}, 'block': {}, 'whisker':{}, 'wheel': {}}
 
 if args.behavior == "choice":
     choice = dataset.get_session_data(session_ids[0]).choice.choice
     choice = session_gt_output[session_ids[0]]['CHOICE']
     pred = session_pred_output[session_ids[0]]['CHOICE'].argmax(-1)
-    results['Choice']['accuracy'] = accuracy_score(choice, pred)
-    results['Choice']['balanced_accuracy'] = balanced_accuracy_score(choice, pred)
+    results['choice']['accuracy'] = accuracy_score(choice, pred)
+    results['choice']['balanced_accuracy'] = balanced_accuracy_score(choice, pred)
 
 if args.behavior == "block":
     block = dataset.get_session_data(session_ids[0]).block.block
     block = session_gt_output[session_ids[0]]['BLOCK']
     pred = session_pred_output[session_ids[0]]['BLOCK'].argmax(-1)
-    results['Block']['accuracy'] = accuracy_score(block, pred)
-    results['Block']['balanced_accuracy'] = balanced_accuracy_score(block, pred)
+    results['block']['accuracy'] = accuracy_score(block, pred)
+    results['block']['balanced_accuracy'] = balanced_accuracy_score(block, pred)
 
 if args.behavior in ["wheel", "whisker"]:
     intervals = np.c_[

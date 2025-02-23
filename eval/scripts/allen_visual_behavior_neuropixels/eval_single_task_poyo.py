@@ -79,7 +79,7 @@ behavior = args.behavior
 
 logging.info(f"Evaluating session: {session_id}")
 
-params = {"interval_len": 1., "binsize": 0.02}
+params = {"interval_len": 1., "binsize": 0.01}
 
 # ---------
 # LOAD DATA
@@ -377,12 +377,12 @@ if args.behavior == "gabors":
     pred = session_pred_output[session_id]['GABOR_ORIENTATION'].argmax(-1)
     results['gabors']['accuracy'] = accuracy_score(gt, pred)
 elif args.behavior == "static_gratings":
-    gt = dataset.get_session_data(session_ids[0]).static_gratings.static_gratings
+    gt = dataset.get_session_data(session_ids[0]).static_gratings.orientation
     gt = session_gt_output[session_id]['STATIC_GRATINGS']
     pred = session_pred_output[session_id]['STATIC_GRATINGS'].argmax(-1)
     results['static_gratings']['accuracy'] = accuracy_score(gt, pred)
 elif args.behavior == "drifting_gratings":
-    gt = dataset.get_session_data(session_ids[0]).drifting_gratings.drifting_gratings
+    gt = dataset.get_session_data(session_ids[0]).drifting_gratings.orientation
     gt = session_gt_output[session_id]['DRIFTING_GRATINGS']
     pred = session_pred_output[session_id]['DRIFTING_GRATINGS'].argmax(-1)
     results['drifting_gratings']['accuracy'] = accuracy_score(gt, pred)
@@ -396,8 +396,8 @@ elif args.behavior == "running_speed":
     pred_vals = pred.squeeze()
 
     intervals = np.c_[
-        dataset.get_session_data(session_ids[0]).running_speed.start, 
-        dataset.get_session_data(session_ids[0]).running_speed.end, 
+        dataset.get_session_data(session_ids[0])._domain.start, 
+        dataset.get_session_data(session_ids[0])._domain.end, 
     ]
     
     _, binned_gt, _, _ = bin_target(
