@@ -25,8 +25,21 @@ ckpt_name=${eid}_${behavior}
 if [ "$unaligned" = "True" ]; then
     config_name=${config_name}_unaligned.yaml
 else
-    config_name=${config_name}_aligned.yaml
+    if [[ "$behavior" != "choice" && "$behavior" != "block" ]]; then
+        config_name=${config_name}_aligned.yaml
+    else
+        config_name=${config_name}.yaml
+    fi
 fi
+
+dataset_config=${config_name%.yaml}    # removes .yaml
+dataset_config=${dataset_config#train_} # removes train_ prefix
+dataset_config="${dataset_config}.yaml"
+
+dataset_path=$(grep "dataset: ibl" "../../configs/${config_name}" | sed 's/.*dataset: //')
+default_eid=$(echo $dataset_path | sed 's/.*ibl\///;s/\/.*//')
+
+sed -i "s/- dataset: ibl\/${default_eid}\/${dataset_config}/- dataset: ibl\/${eid}\/${dataset_config}/" ../../configs/${config_name}
 
 cd ../../eval/scripts/ibl_visual_behavior_neuropixels/
 

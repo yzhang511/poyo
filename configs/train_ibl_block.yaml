@@ -2,7 +2,7 @@
 defaults:
   - _self_
   - model: poyo_single_session.yaml
-  - dataset: ibl_block.yaml
+  - dataset: ibl/d23a44ef-1402-4ed7-97f5-47e9a7a504d9/ibl_block.yaml
 
 train_transforms:
   - _target_: kirby.transforms.UnitDropout

@@ -1,14 +1,13 @@
-- selection:
-    - dandiset: "d23a44ef-1402-4ed7-97f5-47e9a7a504d9_unaligned"
-      sortsets:
-      - d23a44ef-1402-4ed7-97f5-47e9a7a504d9
-  config:
+- config:
     multitask_readout:
-      - decoder_id: WHEEL
-        normalize_mean:
-          - 0.31389678
-        normalize_std:
-          - 0.72835733
-        metrics:
-          - metric: r2
-          
+    - decoder_id: WHEEL
+      metrics:
+      - metric: r2
+      normalize_mean:
+      - 0.3114081025123596
+      normalize_std:
+      - 0.7224208138970558
+  selection:
+  - dandiset: d23a44ef-1402-4ed7-97f5-47e9a7a504d9_unaligned
+    sortsets:
+    - d23a44ef-1402-4ed7-97f5-47e9a7a504d9
