@@ -29,30 +29,38 @@ if __name__ == "__main__":
 
     # download data for session
     truncated_file = True
-    directory = os.path.join(args.output_dir + "/session_" + str(args.session_id))
 
-    while truncated_file:
-        session = cache.get_session_data(args.session_id)
-        try:
-            print(session.specimen_name)
-            truncated_file = False
-        except OSError:
-            shutil.rmtree(directory)
-            print(" Truncated spikes file, re-downloading")
+    sessions = cache.get_session_table()
 
-    if args.download_lfp:
-        for probe_id, probe in session.probes.iterrows():
-            print(" " + probe.description)
-            truncated_lfp = True
+    for session_id, row in sessions.iterrows():
 
-            while truncated_lfp:
-                try:
-                    lfp = session.get_lfp(probe_id)
-                    truncated_lfp = False
-                except OSError:
-                    fname = directory + "/probe_" + str(probe_id) + "_lfp.nwb"
-                    os.remove(fname)
-                    print("  Truncated LFP file, re-downloading")
-                except ValueError:
-                    print("  LFP file not found.")
-                    truncated_lfp = False
+        if session_id != args.session_id:
+            continue
+
+        directory = os.path.join(args.output_dir + "/session_" + str(session_id))
+
+        while truncated_file:
+            session = cache.get_session_data(session_id)
+            try:
+                print(session.specimen_name)
+                truncated_file = False
+            except OSError:
+                shutil.rmtree(directory)
+                print(" Truncated spikes file, re-downloading")
+
+        if args.download_lfp:
+            for probe_id, probe in session.probes.iterrows():
+                print(" " + probe.description)
+                truncated_lfp = True
+
+                while truncated_lfp:
+                    try:
+                        lfp = session.get_lfp(probe_id)
+                        truncated_lfp = False
+                    except OSError:
+                        fname = directory + "/probe_" + str(probe_id) + "_lfp.nwb"
+                        os.remove(fname)
+                        print("  Truncated LFP file, re-downloading")
+                    except ValueError:
+                        print("  LFP file not found.")
+                        truncated_lfp = False

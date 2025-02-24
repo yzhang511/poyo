@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=bcxj-delta-gpu
 #SBATCH --partition=gpuA40x4
-#SBATCH --job-name="train-ibl"
-#SBATCH --output="train-ibl.%j.out"
+#SBATCH --job-name="train-allen"
+#SBATCH --output="train-allen.%j.out"
 #SBATCH -N 1
 #SBACTH --array=0
 #SBATCH -c 1
@@ -18,17 +18,17 @@ cd ../..
 
 conda activate poyo
 
-eid=$1
+session_id=$1
 train_config=$2
 
 dataset_config=${train_config%.yaml}    # removes .yaml
 dataset_config=${dataset_config#train_} # removes train_ prefix
 dataset_config="${dataset_config}.yaml"
 
-dataset_path=$(grep "dataset: ibl" "./configs/${train_config}" | sed 's/.*dataset: //')
-default_eid=$(echo $dataset_path | sed 's/.*ibl\///;s/\/.*//')
+dataset_path=$(grep "dataset: allen" "./configs/${train_config}" | sed 's/.*dataset: //')
+default_session_id=$(echo $dataset_path | sed 's/.*allen\///;s/\/.*//')
 
-sed -i "s/- dataset: ibl\/${default_eid}\/${dataset_config}/- dataset: ibl\/${eid}\/${dataset_config}/" ./configs/${train_config}
+sed -i "s/- dataset: allen\/${default_session_id}\/${dataset_config}/- dataset: allen\/${session_id}\/${dataset_config}/" ./configs/${train_config}
 
 python train.py --config-name $train_config
 

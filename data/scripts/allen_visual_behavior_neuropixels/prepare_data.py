@@ -441,7 +441,7 @@ def get_stim_trial_splits(stim_obj, split_ratios=[0.7, 0.1, 0.2]):
     )
     test_trials = Interval(
         start=np.array([stim_obj.start[valid_boundary]]),
-        end=np.array([stim_obj.end[test_boundary - 1]]),
+        end=np.array([stim_obj.end[test_boundary - 2]]),
     )
     return {"train": train_trials, "valid": valid_trials, "test": test_trials}
 
@@ -531,7 +531,7 @@ def collate_splits(
 def sample_free_behavior_splits(
     start, 
     end, 
-    length=2, 
+    length=1, 
     sample_frac=0.7,
 ):
 

@@ -1,0 +1,9 @@
+- selection:
+    - dandiset: "allen_visual_behavior_neuropixels_static_gratings"
+      sortsets:
+      - mouse_715093703
+  config:
+    multitask_readout:
+      - decoder_id: STATIC_GRATINGS
+        metrics:
+          - metric: accuracy

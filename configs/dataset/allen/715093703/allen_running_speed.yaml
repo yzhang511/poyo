@@ -1,0 +1,13 @@
+- config:
+    multitask_readout:
+    - decoder_id: RUNNING_SPEED
+      metrics:
+      - metric: r2
+      normalize_mean:
+      - 6.564141750335693
+      normalize_std:
+      - 9.143673119577043
+  selection:
+  - dandiset: allen_visual_behavior_neuropixels_running_speed
+    sortsets:
+    - mouse_715093703

@@ -153,7 +153,7 @@ if __name__ == "__main__":
             decoder_id = data[i]['config']['multitask_readout'][task_id]['decoder_id']
             if decoder_id in ['BLOCK', 'CHOICE']:
                 continue
-            assert decoder_id in ['WHISKER', 'WHEEL'] # only these two are allowed
+            assert decoder_id in ['WHISKER', 'WHEEL', 'RUNNING_SPEED'] # only these two are allowed
             data[i]['config']['multitask_readout'][task_id]['normalize_mean'][0] = float(val_dict[decoder_id]['mean'])
             data[i]['config']['multitask_readout'][task_id]['normalize_std'][0] = float(val_dict[decoder_id]['std'])
 

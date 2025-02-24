@@ -1,0 +1,10 @@
+- selection:
+    - dandiset: "allen_visual_behavior_neuropixels_gabors"
+      sortsets:
+      - mouse_715093703
+  config:
+    multitask_readout:
+      - decoder_id: GABOR_ORIENTATION
+        metrics:
+          - metric: accuracy
+
